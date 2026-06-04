@@ -1,0 +1,95 @@
+{
+  "name": "texas",
+  "version": "1.0.0",
+  "description": "QQ Bot framework based on NapCat / OneBot 11",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/core/main.js",
+    "worker": "node dist/worker.js",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build:frontend": "pnpm --filter frontend build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{json,yaml,yml,md}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{json,yaml,yml,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --project backend",
+    "test:watch": "vitest --project backend",
+    "test:coverage": "vitest run --project backend --coverage",
+    "test:all": "vitest run",
+    "db:generate": "prisma generate --schema prisma/main/schema.prisma && prisma generate --schema prisma/chat/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema prisma/main/schema.prisma && prisma migrate deploy --schema prisma/chat/schema.prisma",
+    "db:migrate:dev:main": "prisma migrate dev --schema prisma/main/schema.prisma",
+    "db:migrate:dev:chat": "prisma migrate dev --schema prisma/chat/schema.prisma",
+    "bump": "commit-and-tag-version",
+    "bump:patch": "commit-and-tag-version --release-as patch",
+    "bump:minor": "commit-and-tag-version --release-as minor",
+    "bump:major": "commit-and-tag-version --release-as major",
+    "changelog": "commit-and-tag-version --skip.bump --skip.commit --skip.tag",
+    "commit": "cz",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@fastify/env": "^5.0.0",
+    "@fastify/static": "^9.1.1",
+    "@fastify/swagger": "^9.0.0",
+    "@fastify/swagger-ui": "^5.0.0",
+    "@fastify/websocket": "^11.0.0",
+    "@langchain/openai": "^0.5.0",
+    "@prisma/client": "^6.9.0",
+    "@sinclair/typebox": "^0.34.0",
+    "bullmq": "^5.0.0",
+    "fastify": "^5.2.0",
+    "ioredis": "^5.6.0",
+    "langchain": "^0.3.0",
+    "minio": "^8.0.0",
+    "parquetjs-lite": "^0.8.7",
+    "pino": "^9.0.0",
+    "pino-pretty": "^13.0.0",
+    "playwright": "^1.52.0",
+    "prom-client": "^15.1.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "commit-and-tag-version": "^12.7.3",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-import-x": "^4.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^16.0.0",
+    "nodemon": "^3.0.0",
+    "prettier": "^3.8.0",
+    "prisma": "^6.9.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,yaml,yml,md}": [
+      "prettier --write"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  }
+}

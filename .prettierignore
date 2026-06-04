@@ -1,0 +1,11 @@
+# Helm chart templates use Go template syntax incompatible with Prettier
+helm/
+
+# Generated files
+prisma/*/generated/
+dist/
+frontend/dist/
+
+# Lock files
+pnpm-lock.yaml
+frontend/pnpm-lock.yaml
