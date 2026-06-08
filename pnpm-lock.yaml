@@ -176,8 +176,8 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
       '@vue/eslint-config-typescript':
-        specifier: ^14.7.0
-        version: 14.7.0(eslint-plugin-vue@10.9.2(@typescript-eslint/parser@8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0))))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+        specifier: ^14.8.0
+        version: 14.8.0(eslint-plugin-vue@10.9.2(@typescript-eslint/parser@8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0))))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.35)(@vue/server-renderer@3.5.35(vue@3.5.35(typescript@6.0.3)))(vue@3.5.35(typescript@6.0.3))
@@ -1994,8 +1994,8 @@ packages:
   '@vue/devtools-shared@8.1.2':
     resolution: {integrity: sha512-X9RyVFYAdkBe4IUf5v48TxBF/6QPmF8CmWrDAjXzfUHrgQ/HGfTC1A6TqgXqZ03ye66l3AD51BAGD69IvKM9sw==}
 
-  '@vue/eslint-config-typescript@14.7.0':
-    resolution: {integrity: sha512-iegbMINVc+seZ/QxtzWiOBozctrHiF2WvGedruu2EbLujg9VuU0FQiNcN2z1ycuaoKKpF4m2qzB5HDEMKbxtIg==}
+  '@vue/eslint-config-typescript@14.8.0':
+    resolution: {integrity: sha512-yIquzhXH7ZsrwSSm+rYvoGCRY6wcuF4qBi76e0l7hHLq7YU0f9aC+RcR5fL+XJNfmBZxgX5cVl4sppt4x7ZCBg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^9.10.0 || ^10.0.0
@@ -3606,6 +3606,26 @@ packages:
       ws:
         optional: true
 
+  langsmith@0.7.5:
+    resolution: {integrity: sha512-OeD6+yKtWwy6sAboq25kD5DICzYv7j2KgtV2n4LsJ8nU2LpEdt1UwbjA6BON/zTggmS/YjV2TtLTHd7VEJhtEA==}
+    peerDependencies:
+      '@opentelemetry/api': '*'
+      '@opentelemetry/exporter-trace-otlp-proto': '*'
+      '@opentelemetry/sdk-trace-base': '*'
+      openai: '*'
+      ws: '>=7'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@opentelemetry/exporter-trace-otlp-proto':
+        optional: true
+      '@opentelemetry/sdk-trace-base':
+        optional: true
+      openai:
+        optional: true
+      ws:
+        optional: true
+
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -4598,6 +4618,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.8.2:
+    resolution: {integrity: sha512-c8jsqUZm3omBOI66G90z1Dyw5z622G8oLG+omfsHBJf3CWQTlOcwOjvOG6wtiNfW6anKm/eA39LMwMtMez2TiQ==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   seq-queue@0.0.5:
     resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
 
@@ -5451,7 +5476,7 @@ snapshots:
       '@babel/code-frame': 7.29.7
       '@babel/generator': 7.29.7
       '@babel/helper-compilation-targets': 7.29.7
-      '@babel/helper-module-transforms': 7.29.7(@babel/core@7.29.7)
+      '@babel/helper-module-transforms': 7.29.7(@babel/core@7.29.7(supports-color@5.5.0))
       '@babel/helpers': 7.29.7
       '@babel/parser': 7.29.7
       '@babel/template': 7.29.7
@@ -5524,7 +5549,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-module-transforms@7.29.7(@babel/core@7.29.7)':
+  '@babel/helper-module-transforms@7.29.7(@babel/core@7.29.7(supports-color@5.5.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@5.5.0)
       '@babel/helper-module-imports': 7.29.7
@@ -5775,7 +5800,7 @@ snapshots:
     dependencies:
       '@simple-libs/child-process-utils': 1.0.2
       '@simple-libs/stream-utils': 1.2.0
-      semver: 7.8.1
+      semver: 7.8.2
     optionalDependencies:
       conventional-commits-parser: 6.4.0
 
@@ -6170,7 +6195,7 @@ snapshots:
       '@cfworker/json-schema': 4.1.1
       '@standard-schema/spec': 1.1.0
       js-tiktoken: 1.0.21
-      langsmith: 0.7.4(@opentelemetry/api@1.9.1)(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0)
+      langsmith: 0.7.5(@opentelemetry/api@1.9.1)(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0)
       mustache: 4.2.0
       p-queue: 6.6.2
       zod: 4.4.3
@@ -7049,7 +7074,7 @@ snapshots:
 
   '@vue/devtools-shared@8.1.2': {}
 
-  '@vue/eslint-config-typescript@14.7.0(eslint-plugin-vue@10.9.2(@typescript-eslint/parser@8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0))))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
+  '@vue/eslint-config-typescript@14.8.0(eslint-plugin-vue@10.9.2(@typescript-eslint/parser@8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0))))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
       '@typescript-eslint/utils': 8.60.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
@@ -7594,7 +7619,7 @@ snapshots:
       handlebars: 4.7.9
       json-stringify-safe: 5.0.1
       meow: 8.1.2
-      semver: 7.8.1
+      semver: 7.8.2
       split: 1.0.1
 
   conventional-changelog@4.0.0:
@@ -8800,6 +8825,14 @@ snapshots:
       openai: 6.42.0(ws@8.21.0)(zod@4.4.3)
       ws: 8.21.0
 
+  langsmith@0.7.5(@opentelemetry/api@1.9.1)(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0):
+    dependencies:
+      p-queue: 6.6.2
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
+      openai: 6.42.0(ws@8.21.0)(zod@4.4.3)
+      ws: 8.21.0
+
   levn@0.4.1:
     dependencies:
       prelude-ls: 1.2.1
@@ -9182,7 +9215,7 @@ snapshots:
     dependencies:
       hosted-git-info: 4.1.0
       is-core-module: 2.16.2
-      semver: 7.8.1
+      semver: 7.8.2
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -9798,6 +9831,8 @@ snapshots:
   semver@7.8.0: {}
 
   semver@7.8.1: {}
+
+  semver@7.8.2: {}
 
   seq-queue@0.0.5: {}
 
@@ -10418,7 +10453,7 @@ snapshots:
       eslint-visitor-keys: 5.0.1
       espree: 11.2.0
       esquery: 1.7.0
-      semver: 7.8.1
+      semver: 7.8.2
     transitivePeerDependencies:
       - supports-color
 
