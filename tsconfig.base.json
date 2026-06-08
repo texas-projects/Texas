@@ -8,6 +8,7 @@
       "@logger": ["./src/core/logging/main.ts"]
     },
     "lib": ["ES2024"],
+    "types": ["node"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
