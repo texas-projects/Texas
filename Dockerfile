@@ -68,7 +68,7 @@ COPY --from=builder --chown=aemeath:aemeath /app/package.json ./
 COPY --from=builder --chown=aemeath:aemeath /root/.cache/ms-playwright /home/aemeath/.cache/ms-playwright
 
 # 复制启动脚本
-COPY --chown=aemeath:aemeath entrypoint.sh /entrypoint.sh
+COPY --chown=aemeath:aemeath scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 USER aemeath

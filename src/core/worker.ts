@@ -6,13 +6,14 @@
  *   pnpm worker
  */
 
+import { createLogger, setLogger, logger } from '@logger'
 import { Worker } from 'bullmq'
 
-import { loadConfig } from './core/config.js'
-import { createLogger, setLogger, logger } from './core/logging/setup.js'
-import { createBullMQConnection, QUEUE_NAMES } from './core/tasks/broker.js'
-import { dailyCheckinProcessor } from './tasks/daily-checkin.js'
-import { dailyLikeProcessor } from './tasks/daily-like.js'
+import { dailyCheckinProcessor } from '../tasks/daily-checkin.js'
+import { dailyLikeProcessor } from '../tasks/daily-like.js'
+
+import { loadConfig } from './config.js'
+import { createBullMQConnection, QUEUE_NAMES } from './tasks/broker.js'
 
 // ── 初始化 ──
 

@@ -258,7 +258,7 @@ src/
 ├── services/    # 功能业务服务（@Startup/@Shutdown 注册）
 ├── tasks/       # BullMQ 任务处理器（daily-checkin、daily-like）
 ├── types/       # 全局类型扩展（fastify.d.ts 等）
-└── worker.ts    # BullMQ Worker 进程入口
+│   └── worker.ts    # BullMQ Worker 进程入口
 ```
 
 ### 核心领域包 (`src/core/<domain>/`)
@@ -308,7 +308,7 @@ src/
 
 ### 异步任务（BullMQ）
 
-BullMQ（任务队列）取代原有的 Dramatiq。Worker 进程运行在 `src/worker.ts`，通过 RPC 桥接调用主进程业务服务。
+BullMQ（任务队列）取代原有的 Dramatiq。Worker 进程运行在 `src/core/worker.ts`，通过 RPC 桥接调用主进程业务服务。
 
 **BullMQ 队列名称（`src/core/tasks/broker.ts`）：**
 

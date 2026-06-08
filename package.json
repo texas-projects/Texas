@@ -27,7 +27,7 @@
     "test:frontend": "vitest run --project frontend",
     "test:frontend:watch": "vitest --project frontend",
     "test:frontend:coverage": "vitest run --project frontend --coverage",
-    "db:generate": "prisma generate --config prisma/main/prisma.config.ts && prisma generate --config prisma/chat/prisma.config.ts && node scripts/patch-prisma-exports/index.cjs",
+    "db:generate": "prisma generate --config prisma/main/prisma.config.ts && prisma generate --config prisma/chat/prisma.config.ts",
     "db:migrate": "prisma migrate deploy --config prisma/main/prisma.config.ts && prisma migrate deploy --config prisma/chat/prisma.config.ts",
     "db:migrate:dev:main": "prisma migrate dev --config prisma/main/prisma.config.ts",
     "db:migrate:dev:chat": "prisma migrate dev --config prisma/chat/prisma.config.ts",

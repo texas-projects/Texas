@@ -1,9 +1,10 @@
 import { defineConfig } from 'tsup'
+import { resolve } from 'node:path'
 
 export default defineConfig({
   entry: {
     'core/main': 'src/core/main.ts',
-    worker: 'src/worker.ts',
+    worker: 'src/core/worker.ts',
   },
   format: 'esm',
   target: 'node22',
@@ -13,4 +14,7 @@ export default defineConfig({
   outDir: 'dist',
   sourcemap: true,
   external: [/^#prisma\/.*/],
+  esbuildOptions(options) {
+    options.alias = { '@logger': resolve('./src/core/logging/main.ts') }
+  },
 })

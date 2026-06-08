@@ -1,6 +1,6 @@
 {
   "watch": ["src"],
   "ext": "ts,json",
-  "ignore": ["src/core/db/__generated__/**", "dist/**"],
+  "ignore": ["dist/**"],
   "exec": "tsx src/core/main.ts"
 }

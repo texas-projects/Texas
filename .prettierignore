@@ -9,3 +9,6 @@ frontend/dist/
 # Lock files
 pnpm-lock.yaml
 frontend/pnpm-lock.yaml
+
+# Shell scripts
+**/*.sh

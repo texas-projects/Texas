@@ -6,7 +6,7 @@ import pino from 'pino'
 import type { Logger } from 'pino'
 import pinoPretty from 'pino-pretty'
 
-// ── 日志广播流写入器（Phase 6 接入）──
+// ── 日志广播流写入器 ──
 
 import { logBroadcaster } from './broadcast.js'
 
