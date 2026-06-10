@@ -42,7 +42,7 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
       }>,
       reply: FastifyReply,
     ) => {
-      const { ChatHistoryService } = await import('@/core/chat/main.js')
+      const { ChatHistoryService } = await import('@/core/chat/index.js')
       const registry = getServiceRegistry(app)
 
       const svc = registry.getTyped(ChatHistoryService, 'chat_service')
@@ -72,7 +72,7 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
       }>,
       reply: FastifyReply,
     ) => {
-      const { ChatHistoryService } = await import('@/core/chat/main.js')
+      const { ChatHistoryService } = await import('@/core/chat/index.js')
       const registry = getServiceRegistry(app)
 
       const svc = registry.getTyped(ChatHistoryService, 'chat_service')
@@ -98,7 +98,7 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
       }>,
       reply: FastifyReply,
     ) => {
-      const { ChatHistoryService } = await import('@/core/chat/main.js')
+      const { ChatHistoryService } = await import('@/core/chat/index.js')
       const registry = getServiceRegistry(app)
 
       const svc = registry.getTyped(ChatHistoryService, 'chat_service')

@@ -7,7 +7,7 @@ import satori from 'satori'
 import type { Font } from 'satori'
 
 import { RenderError, TemplateNotFoundError, TemplateRenderError } from '../errors.js'
-import { getLogger } from '../logging/main.js'
+import { getLogger } from '../logging/index.js'
 
 import { loadFonts } from './fonts.js'
 import type { RenderOptions, SatoriElement, TemplateFunction, TemplateRegistry } from './types.js'

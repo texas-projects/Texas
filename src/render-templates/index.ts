@@ -4,6 +4,6 @@
 
 import helpTemplate from './help.js'
 
-import { renderService } from '@/core/renderer/main.js'
+import { renderService } from '@/core/renderer/index.js'
 
 renderService.register('help', helpTemplate)

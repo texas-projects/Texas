@@ -15,7 +15,7 @@
  *   }
  */
 
-import type { LLMService } from './main.js'
+import type { LLMService } from './index.js'
 
 /** 对话消息格式。 */
 export interface ChatMessage {

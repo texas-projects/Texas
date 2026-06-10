@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { RenderService } from '@/core/renderer/service.js'
 import type { TemplateFunction } from '@/core/renderer/types.js'
 
-vi.mock('@/core/logging/main.js', () => ({
+vi.mock('@/core/logging/index.js', () => ({
   getLogger: vi.fn().mockReturnValue({
     info: vi.fn(),
     warn: vi.fn(),

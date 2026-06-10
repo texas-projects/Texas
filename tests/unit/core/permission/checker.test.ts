@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Context } from '@/core/framework/context.js'
 import { Permission } from '@/core/framework/decorators.js'
 import { FeaturePermissionChecker } from '@/core/permission/checker.js'
-import type { FeaturePermissionService } from '@/core/permission/main.js'
-import type { PersonnelService } from '@/core/personnel/main.js'
+import type { FeaturePermissionService } from '@/core/permission/index.js'
+import type { PersonnelService } from '@/core/personnel/index.js'
 import type { PermissionRegistry } from '@/core/registries/permission-registry.js'
 
 /** 创建 mock FeaturePermissionService。 */

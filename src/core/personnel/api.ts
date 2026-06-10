@@ -4,9 +4,10 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 
-import type { PersonnelService } from './main.js'
 import type { PersonnelQueryService } from './query.js'
 import type { SyncCoordinator } from './sync.js'
+
+import type { PersonnelService } from './index.js'
 
 import { NotFoundError } from '@/core/errors.js'
 import { ok, fail } from '@/core/utils/response.js'

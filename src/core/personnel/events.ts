@@ -5,7 +5,7 @@
  * 将增量变更持久化到数据库并维护 Redis 缓存。
  */
 
-import { computeRelation } from './main.js'
+import { computeRelation } from './index.js'
 
 import type { CacheClient } from '@/core/cache/client.js'
 import { userRelationKey } from '@/core/cache/key-registry.js'

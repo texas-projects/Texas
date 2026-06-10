@@ -5,7 +5,7 @@
     "moduleResolution": "NodeNext",
     "paths": {
       "@/*": ["./src/*"],
-      "@logger": ["./src/core/logging/main.ts"]
+      "@logger": ["./src/core/logging/index.ts"]
     },
     "lib": ["ES2024"],
     "types": ["node"],

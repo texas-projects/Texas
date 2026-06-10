@@ -4,7 +4,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 
-import type { FeaturePermissionService } from '@/core/permission/main.js'
+import type { FeaturePermissionService } from '@/core/permission/index.js'
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok, fail } from '@/core/utils/response.js'
 
@@ -14,7 +14,7 @@ function getServiceRegistry(app: FastifyInstance): ServiceRegistry {
 }
 
 async function getPermSvc(app: FastifyInstance): Promise<FeaturePermissionService> {
-  const { FeaturePermissionService } = await import('@/core/permission/main.js')
+  const { FeaturePermissionService } = await import('@/core/permission/index.js')
   const registry = getServiceRegistry(app)
 
   return registry.getTyped(FeaturePermissionService, 'permission_service')

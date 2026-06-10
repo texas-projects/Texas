@@ -7,7 +7,7 @@ import { getLogger } from '@logger'
 import type { Context } from '@/core/framework/context.js'
 import type { ComponentMeta } from '@/core/framework/decorators.js'
 import { Component, OnCommand, MessageScope } from '@/core/framework/decorators.js'
-import { render } from '@/core/renderer/main.js'
+import { render } from '@/core/renderer/index.js'
 import type { HelpData } from '@/render-templates/help.js'
 
 const log = getLogger('help')
