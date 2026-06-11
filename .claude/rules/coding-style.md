@@ -47,6 +47,32 @@
 - **API 路由路径**：使用 kebab-case（`/api/chat-history`，非 `/api/chatHistory`）
 - **数据库表名**（Prisma `@@map`）：`snake_case` 复数形式（`chat_messages`，非 `ChatMessage`）
 
+## 路径别名（后端强制）
+
+后端代码引用 `src/` 目录下的文件**必须**使用路径别名，禁止使用相对路径（`../../../`）跨层引用：
+
+| 别名        | 指向                          | 用途                                |
+| ----------- | ----------------------------- | ----------------------------------- |
+| `@/*`       | `src/*`                       | `src/` 下所有模块的通用别名        |
+| `@logger`   | `src/core/logging/index.js`   | Pino logger，**必须**使用此别名    |
+| `#prisma/*` | `prisma/*/generated/index.js` | Prisma 生成客户端，**必须**使用此别名 |
+
+示例：
+
+```typescript
+// ✅ 正确
+import { logger } from '@logger'
+import { mainDb } from '#prisma/main'
+import { someUtil } from '@/core/utils/helpers.js'
+
+// ❌ 禁止
+import { logger } from '../../../core/logging/index.js'
+import { mainDb } from '../../../prisma/main/generated/index.js'
+```
+
+- 同一文件内的相对导入（同目录或相邻目录）仍允许使用相对路径
+- 别名配置维护在 `tsconfig.json` 的 `paths` 字段中，确保与实际目录结构一致
+
 ## 导入规范
 
 - 所有 `.ts` 模块导入**必须**使用 `.js` 后缀（Node ESM 要求）：`import { foo } from './foo.js'`

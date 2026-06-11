@@ -56,8 +56,8 @@ pnpm start          # 启动生产服务器（需先 build）
 pnpm worker         # 启动 BullMQ Worker 进程（独立消费队列任务）
 pnpm lint           # ESLint 检查
 pnpm lint:fix       # ESLint 检查并自动修复
-pnpm format         # Prettier 格式化 src/ tests/ 及配置文件
-pnpm format:check   # Prettier 格式检查（不修改）
+pnpm format         # Prettier 格式检查（不修改文件）
+pnpm format:fix     # Prettier 格式化并写入
 pnpm type-check     # tsc --noEmit 类型检查
 ```
 
@@ -214,9 +214,9 @@ Shutdown({ name: 'my_service' })(async (services: Record<string, unknown>): Prom
 })
 ```
 
-基础设施 key（可在 `requires` 中直接使用）：`db`、`chat_db`、`cache`、`persistent`、`cache_redis`、`persistent_redis`、`bot_api`、`conn_mgr`、`dispatcher`、`scanner`、`rpc_consumer`、`queues`
+基础设施 key（可在 `requires` 中直接使用）：`db`、`chat_db`、`cache`、`persistent`、`cache_redis`、`persistent_redis`、`bot_api`、`conn_mgr`、`dispatcher`、`scanner`、`rpc_consumer`、`queues`、`renderer`、`settings`
 
-`ComponentScanner` 扫描 `src/services/` 和 `src/core/browser/` 时触发模块 import，装饰器调用自动注册到注册表。
+`ComponentScanner` 扫描 `src/handlers/`（event handlers）及 `src/services/`、`src/core/renderer/`、`src/core/settings/`、`src/render-templates/`（服务/模板）时触发模块 import，装饰器副作用自动注册到注册表。
 
 ### 依赖注入模式
 
@@ -229,7 +229,7 @@ Shutdown({ name: 'my_service' })(async (services: Record<string, unknown>): Prom
 ```
 src/
 ├── core/        # 框架基础设施
-│   ├── browser/     # Playwright Chromium 封装
+│   ├── renderer/    # 渲染服务（RenderService，Startup key: renderer）
 │   ├── cache/       # Redis 缓存客户端 + key 注册表
 │   ├── chat/        # 聊天领域（archive、exporter、s3、main）
 │   ├── db/          # Prisma 客户端 + schema 文件 + 生成代码
@@ -238,11 +238,11 @@ src/
 │   ├── llm/         # LLM 领域（api、client、completion、schemas）
 │   ├── logging/     # Pino 日志配置 + 广播（SSE 推送）
 │   ├── monitoring/  # Prometheus 指标
-│   ├── permission/  # 权限领域（checker、main）
 │   ├── personnel/   # 人员领域（api、events、query、sync）
 │   ├── protocol/    # OneBot 11 协议模型与 API 封装
 │   ├── registries/  # 功能/权限/服务/配置注册表
 │   ├── rpc/         # 跨进程 RPC（Redis pub/sub）
+│   ├── settings/    # 设置领域（SettingsService、SettingsPermissionChecker，Startup key: settings）
 │   ├── tasks/       # BullMQ broker 配置
 │   ├── utils/       # 工具函数（helpers、md2img、redis-factory、response）
 │   └── ws/          # WebSocket 连接管理（connection、heartbeat、server）
@@ -302,8 +302,6 @@ src/
 | `daily-checkin.ts` | `DailyCheckinService` | 群签到（定时触发，RPC 桥接）                      |
 | `checkin.ts`       | `CheckinService`      | 群签到业务逻辑（积分、排行、汇总）                |
 | `drift-bottle.ts`  | `DriftBottleService`  | 漂流瓶（扔/捞、多池管理）                         |
-| `browser.ts`       | 生命周期注册          | `BrowserService` 启动/关闭（Playwright Chromium） |
-| `md-renderer.ts`   | 生命周期注册          | `MarkdownRenderer`（Markdown→PNG 渲染）           |
 | `scheduler.ts`     | `SchedulerService`    | APScheduler / 定时任务编排                        |
 
 ### 异步任务（BullMQ）
@@ -405,8 +403,3 @@ pnpm test:watch  # 监听模式
 ```
 
 前端测试位于 `frontend/tests/`（按 `composables/`、`utils/`、`stores/` 分类）。
-
-## 详细文档
-
-- `misc/2026-06-03-typescript-rewrite-design.md`：TypeScript 重构设计文档
-- `misc/NapCatDocs/`：NapCat 协议文档 git submodule
