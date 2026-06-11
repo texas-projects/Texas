@@ -25,3 +25,6 @@ cacheKeyRegistry.register({
   name: 'admins',
   build: () => 'aemeath:personnel:admins',
 })
+
+/** 人员关系缓存 glob 模式。 */
+export const USER_RELATION_GLOB = 'aemeath:personnel:user:*:relation'

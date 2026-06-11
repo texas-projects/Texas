@@ -8,10 +8,10 @@
 import { logger, type Logger } from '@logger'
 
 import type { CacheClient } from '@/core/cache/client.js'
-import { checkinDailyKey } from '@/core/cache/key-registry.js'
 import type { MainPrismaClient } from '@/core/db/client.js'
 import { Startup } from '@/core/lifecycle/registry.js'
 import type { BotAPI } from '@/core/protocol/api.js'
+import { cacheKeyRegistry } from '@/core/registries/index.js'
 import type { SettingsService } from '@/core/settings/service.js'
 import { SHANGHAI_TZ } from '@/core/utils/helpers.js'
 import type { ConnectionManager } from '@/core/ws/connection.js'
@@ -106,7 +106,9 @@ export class DailyCheckinService {
       // Redis 去重：今日已打卡则跳过
       let alreadyDone: boolean
       try {
-        alreadyDone = await this.cache.exists(checkinDailyKey(groupId, today))
+        alreadyDone = await this.cache.exists(
+          cacheKeyRegistry.buildKey('checkin', 'daily', String(groupId), today),
+        )
       } catch (err) {
         this._log.warn({ groupId, err }, 'Redis 查询失败，跳过该群')
         skipped++
@@ -143,7 +145,11 @@ export class DailyCheckinService {
           )
           failed++
         } else {
-          await this.cache.set(checkinDailyKey(groupId, today), '1', CHECKIN_TTL)
+          await this.cache.set(
+            cacheKeyRegistry.buildKey('checkin', 'daily', String(groupId), today),
+            '1',
+            CHECKIN_TTL,
+          )
           sent++
         }
       } catch (err) {

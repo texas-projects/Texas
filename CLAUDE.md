@@ -152,7 +152,7 @@ docker build -t aemeath:latest .
 
 - `EventDispatcher` → `CompositeHandlerMapping` → 具体 Mapping 策略
 - 内置路由策略：`CommandHandlerMapping`（`/cmd`）、`RegexHandlerMapping`、`KeywordHandlerMapping`、`StartsWith`、`EndsWith`、`FullMatch`、`EventTypeHandlerMapping` 等
-- `ComponentScanner` 动态 import `src/handlers/` 下所有文件，装饰器副作用自动注册组件
+- `EchoLoader` 根据根目录 `aemeath.config.ts` 配置动态 import 各类型目录，装饰器副作用自动注册组件
 - 系统级功能（如 `personnel`）内聚于对应领域包（如 `src/core/personnel/`）
 - 拦截器：`LoggingInterceptor`（Pino 结构化日志）、`MetricsInterceptor`（Prometheus）、`SessionInterceptor`（多轮会话）
 
@@ -184,10 +184,10 @@ class EchoHandler {
 }
 ```
 
-- `@Component` 同时在 `featureRegistry` 中注册功能元数据（用于权限管理页面）
+- `@Component` 同时在 `handlerRegistry` 中注册功能元数据（用于权限管理页面）
 - `defaultEnabled: false`（默认值）意味着管理员需在前端手动开启该功能
 - `system: true` 的功能强制启用且不暴露给前端
-- 可用装饰器：`@OnCommand`、`@OnRegex`、`@OnKeyword`、`@OnStartsWith`、`@OnEndsWith`、`@OnFullMatch`、`@OnEvent`、`@OnNotice`、`@OnRequest`、`@OnPoke`、`@OnEssence`、`@OnBotOffline`
+- 可用装饰器：`@OnCommand`、`@OnRegex`、`@OnKeyword`、`@OnStartsWith`、`@OnEndsWith`、`@OnFullMatch`、`@OnEvent`、`@OnNotice`、`@OnRequest`、`@OnMessageSent`、`@OnPoke`、`@OnEssence`、`@OnBotOffline`
 - 交互式多轮会话见 `src/core/framework/session/`
 
 ### 生命周期编排 (`src/core/lifecycle/`)
@@ -214,11 +214,11 @@ Shutdown({ name: 'my_service' })(async (services: Record<string, unknown>): Prom
 })
 ```
 
-基础设施 key（可在 `requires` 中直接使用）：`db`、`chat_db`、`cache`、`persistent`、`cache_redis`、`persistent_redis`、`bot_api`、`conn_mgr`、`dispatcher`、`scanner`、`queue`
+基础设施 key（可在 `requires` 中直接使用）：`db`、`chat_db`、`cache`、`persistent`、`cache_redis`、`persistent_redis`、`bot_api`、`conn_mgr`、`dispatcher`、`queue`
 
 业务服务 key（由 Startup 注册后可用）：`renderer`、`settings`、`settings_checker`、`personnelService` 等
 
-`ComponentScanner` 扫描 `src/handlers/`（event handlers）及 `src/services/`、`src/core/renderer/`、`src/core/settings/`、`src/render-templates/`（服务/模板）时触发模块 import，装饰器副作用自动注册到注册表。
+`EchoLoader` 按 `aemeath.config.ts` 的 `echoes` 配置扫描各目录（默认：`handler→src/handlers`、`service→src/services,src/render-templates`、`task→src/tasks`、`route→src/apis`），import 触发装饰器副作用自动注册到注册表。
 
 ### 依赖注入模式
 
@@ -231,11 +231,10 @@ Shutdown({ name: 'my_service' })(async (services: Record<string, unknown>): Prom
 ```
 src/
 ├── core/        # 框架基础设施
-│   ├── renderer/    # 渲染服务（RenderService，Startup key: renderer）
-│   ├── cache/       # Redis 缓存客户端 + key 注册表
+│   ├── cache/       # Redis 缓存客户端；cache key 统一由 `cacheKeyRegistry`（`src/core/registries/cache-key.ts`）管理
 │   ├── chat/        # 聊天领域（archive、exporter、s3、main）
 │   ├── db/          # Prisma 客户端 + schema 文件 + 生成代码
-│   ├── framework/   # 事件分发框架（dispatcher、mapping、decorators、scanner、session）
+│   ├── framework/   # 事件分发框架（dispatcher、mapping、decorators、loader、session）
 │   ├── lifecycle/   # 生命周期编排（orchestrator、registry）
 │   ├── llm/         # LLM 领域（api、client、completion、schemas）
 │   ├── logging/     # Pino 日志配置 + 广播（SSE 推送）
@@ -256,10 +255,12 @@ src/
 │   ├── plugins/     # Fastify 插件（auth、cors、swagger）
 │   ├── schemas/     # 请求/响应 TypeBox schema
 │   └── router.ts    # 路由聚合注册
-├── handlers/    # Bot 事件处理器（ComponentScanner 自动扫描）
-├── services/    # 功能业务服务（@Startup/@Shutdown 注册）
+├── handlers/    # Bot 事件处理器（EchoLoader 自动扫描）
+├── services/    # 功能业务服务（含 renderer/，@Startup/@Shutdown 注册）
 ├── tasks/       # BullMQ 任务处理器（daily-checkin、daily-like）
+├── render-templates/  # 渲染模板（EchoLoader service 类型扫描）
 ├── types/       # 全局类型扩展（fastify.d.ts 等）
+aemeath.config.ts    # EchoLoader 扫描路径配置（echoes: handler/service/task/route）
 ```
 
 ### 核心领域包 (`src/core/<domain>/`)

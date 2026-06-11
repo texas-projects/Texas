@@ -5,7 +5,6 @@ import { Job, Queue, QueueEvents } from 'bullmq'
 import type { ConnectionOptions } from 'bullmq'
 
 import type { CacheClient } from '@/core/cache/client.js'
-import { checkinDailyKey } from '@/core/cache/key-registry.js'
 import type { BotAPI } from '@/core/protocol/api.js'
 import { QUEUE_NAME } from '@/core/tasks/broker.js'
 import { isBotActionResult, isSelfContainedResult } from '@/core/tasks/models.js'
@@ -13,9 +12,6 @@ import type { BotActionJobResult } from '@/core/tasks/models.js'
 import type { ConnectionManager } from '@/core/ws/connection.js'
 
 const log = getLogger('TaskExecutor')
-
-/** 打卡成功后写入 Redis 去重键的 TTL（秒）：90000 秒 ≈ 25 小时。 */
-const CHECKIN_TTL = 90_000
 
 /** Bot API 批量执行时各调用间的延迟（毫秒）。 */
 const SEND_DELAY_MS = 500
@@ -99,23 +95,27 @@ export class TaskExecutor {
         // 已通过白名单检查，方法必然存在；若实现未提供该方法则跳过
         if (fn == null) continue
         await fn(...call.args)
-
-        if (call.method === 'sendGroupSign' && call.args[0] != null) {
-          const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai' }).format(
-            new Date(),
-          )
-          await this.cache.set(
-            checkinDailyKey(call.args[0] as bigint | number, today),
-            '1',
-            CHECKIN_TTL,
-          )
-        }
       } catch (err) {
         log.error({ jobName, method: call.method, err }, 'Bot API 调用失败')
       }
 
       if (result.calls.length > 1) {
         await new Promise<void>((r) => setTimeout(r, SEND_DELAY_MS))
+      }
+    }
+
+    // 执行声明式 post-cache 操作
+    if (result.postCacheOps && result.postCacheOps.length > 0) {
+      for (const op of result.postCacheOps) {
+        try {
+          if (op.action === 'set') {
+            await this.cache.set(op.key, op.value ?? '1', op.ttl ?? 0)
+          } else {
+            await this.cache.del(op.key)
+          }
+        } catch (error) {
+          log.error({ jobName, op, error }, 'postCacheOp 执行失败')
+        }
       }
     }
   }

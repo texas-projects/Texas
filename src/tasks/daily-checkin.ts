@@ -3,14 +3,17 @@
 import type { Job } from 'bullmq'
 
 import type { CacheClient } from '@/core/cache/client.js'
-import { checkinDailyKey } from '@/core/cache/key-registry.js'
 import type { MainPrismaClient } from '@/core/db/client.js'
+import { cacheKeyRegistry } from '@/core/registries/index.js'
 import type { MinimalSettingSchema } from '@/core/settings/query.js'
 import { getSettingValue } from '@/core/settings/query.js'
-import type { BotActionJobResult } from '@/core/tasks/models.js'
+import type { BotActionJobResult, PostCacheOp } from '@/core/tasks/models.js'
 import type { TaskDefinition } from '@/core/tasks/types.js'
 
 export const JOB_NAME = 'daily-checkin' as const
+
+/** 打卡成功后写入 Redis 去重键的 TTL（秒）：90000 秒 ≈ 25 小时。 */
+const CHECKIN_TTL = 90_000
 
 export interface CheckinWorkerDeps {
   db: MainPrismaClient
@@ -31,6 +34,7 @@ export async function dailyCheckinProcessor(
   })
 
   const calls: { method: string; args: unknown[] }[] = []
+  const postCacheOps: PostCacheOp[] = []
 
   for (const g of groups) {
     const botEnabled = await getSettingValue<boolean>('bot.enabled', {
@@ -47,12 +51,14 @@ export async function dailyCheckinProcessor(
     })
     if (!featureEnabled) continue
 
-    if (await cache.exists(checkinDailyKey(g.groupId, today))) continue
+    const dailyKey = cacheKeyRegistry.buildKey('checkin', 'daily', String(g.groupId), today)
+    if (await cache.exists(dailyKey)) continue
 
     calls.push({ method: 'sendGroupSign', args: [Number(g.groupId)] })
+    postCacheOps.push({ action: 'set', key: dailyKey, value: '1', ttl: CHECKIN_TTL })
   }
 
-  return { type: 'bot-action', calls }
+  return { type: 'bot-action', calls, postCacheOps }
 }
 
 export const taskDefinition: TaskDefinition = {

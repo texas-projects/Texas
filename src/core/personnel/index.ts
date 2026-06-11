@@ -5,12 +5,13 @@
  * 增量事件处理已迁移至 PersonnelEventService（events.ts）。
  */
 
-import './cache-keys.js'
+import { USER_RELATION_GLOB } from './cache-keys.js'
 import './metrics.js'
 
 import type { CacheClient } from '@/core/cache/client.js'
-import { adminSetKey, userRelationKey, USER_RELATION_GLOB } from '@/core/cache/key-registry.js'
 import type { MainPrismaClient } from '@/core/db/client.js'
+import { Startup } from '@/core/lifecycle/registry.js'
+import { cacheKeyRegistry } from '@/core/registries/index.js'
 
 /** 用户关系等级。 */
 export type UserRelation = 'stranger' | 'group_member' | 'friend' | 'admin'
@@ -79,9 +80,6 @@ export interface MemberData {
   title_expire_time?: number
   level?: string
 }
-
-/** 同步状态持久化键。 */
-const SYNC_STATUS_KEY = 'aemeath:personnel:sync_status'
 
 /**
  * 用户管理核心服务 —— 封装 upsert、同步编排、缓存管理。
@@ -331,7 +329,7 @@ export class PersonnelService {
       groupsSynced,
       membershipsSynced,
     }
-    await this.cache.set(SYNC_STATUS_KEY, statusData, 0)
+    await this.cache.set(cacheKeyRegistry.buildKey('personnel', 'sync_status'), statusData, 0)
 
     // 清除用户关系缓存
     await this._invalidateAllRelationCache()
@@ -347,8 +345,8 @@ export class PersonnelService {
     if (!user) return false
 
     await this.db.user.update({ where: { qq }, data: { relation: 'admin' } })
-    await this.cache.del(userRelationKey(qq))
-    await this.cache.del(adminSetKey())
+    await this.cache.del(cacheKeyRegistry.buildKey('personnel', 'relation', String(qq)))
+    await this.cache.del(cacheKeyRegistry.buildKey('personnel', 'admins'))
     return true
   }
 
@@ -364,8 +362,8 @@ export class PersonnelService {
 
     const newRelation: UserRelation = hasMembership ? 'group_member' : 'stranger'
     await this.db.user.update({ where: { qq }, data: { relation: newRelation } })
-    await this.cache.del(userRelationKey(qq))
-    await this.cache.del(adminSetKey())
+    await this.cache.del(cacheKeyRegistry.buildKey('personnel', 'relation', String(qq)))
+    await this.cache.del(cacheKeyRegistry.buildKey('personnel', 'admins'))
     return true
   }
 
@@ -384,7 +382,7 @@ export class PersonnelService {
 
   /** 获取所有超级管理员的 QQ 号集合（带 Redis 缓存）。 */
   async getAdminQqSet(): Promise<Set<bigint>> {
-    const key = adminSetKey()
+    const key = cacheKeyRegistry.buildKey('personnel', 'admins')
     const cached = await this.cache.get<number[]>(key)
     if (cached !== null && Array.isArray(cached)) {
       return new Set(cached.map((q) => BigInt(q)))
@@ -401,7 +399,9 @@ export class PersonnelService {
 
   /** 获取最近一次同步状态。 */
   async getSyncStatus(): Promise<SyncStatus> {
-    const data = await this.cache.get<SyncStatus>(SYNC_STATUS_KEY)
+    const data = await this.cache.get<SyncStatus>(
+      cacheKeyRegistry.buildKey('personnel', 'sync_status'),
+    )
     if (data !== null && typeof data === 'object') {
       return data
     }
@@ -417,7 +417,7 @@ export class PersonnelService {
 
   /** 获取用户关系等级（带缓存）。 */
   async getUserRelation(qq: bigint): Promise<string> {
-    const key = userRelationKey(qq)
+    const key = cacheKeyRegistry.buildKey('personnel', 'relation', String(qq))
     const cached = await this.cache.get<string>(key)
     if (cached !== null) return cached
 
@@ -488,9 +488,21 @@ export class PersonnelService {
   private async _invalidateAllRelationCache(): Promise<void> {
     try {
       await this.cache.deleteByPattern(USER_RELATION_GLOB)
-      await this.cache.del(adminSetKey())
+      await this.cache.del(cacheKeyRegistry.buildKey('personnel', 'admins'))
     } catch {
       // 缓存清除失败不影响主流程
     }
   }
 }
+
+// ── 生命周期注册 ──
+
+Startup({
+  name: 'personnel',
+  provides: ['personnelService'],
+  requires: ['db', 'cache'],
+})(async (deps: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  const db = deps.db as MainPrismaClient
+  const cache = deps.cache as CacheClient
+  return { personnelService: new PersonnelService(db, cache) }
+})

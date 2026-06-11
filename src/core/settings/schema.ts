@@ -38,7 +38,7 @@ const BUILTIN_NODES: SettingNodeMeta[] = [
 // ── Schema Map 构建 ──
 
 /**
- * 从 settingNodeRegistry + componentRegistry 构建只读 Schema Map。
+ * 从 settingNodeRegistry + handlerRegistry 构建只读 Schema Map。
  * 同时注入内置系统配置项。
  */
 export function buildSchemaMap(): ReadonlyMap<string, SettingNodeSchema> {

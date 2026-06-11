@@ -152,7 +152,7 @@ describe('TaskExecutor', () => {
     expect(botApi.sendGroupSign).not.toHaveBeenCalled()
   })
 
-  it('sendGroupSign 成功后写入打卡去重键', async () => {
+  it('sendGroupSign 成功后通过 postCacheOps 写入打卡去重键', async () => {
     const { Job } = await import('bullmq')
     Job.fromId = vi.fn().mockResolvedValue({ name: 'checkin' })
 
@@ -167,6 +167,9 @@ describe('TaskExecutor', () => {
       returnvalue: JSON.stringify({
         type: 'bot-action',
         calls: [{ method: 'sendGroupSign', args: [300] }],
+        postCacheOps: [
+          { action: 'set', key: 'aemeath:checkin:300:2024-01-01', value: '1', ttl: 90_000 },
+        ],
       }),
     })
 

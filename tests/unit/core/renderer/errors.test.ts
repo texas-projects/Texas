@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { AppError, TemplateNotFoundError, TemplateRenderError, RenderError } from '@/core/errors.js'
+import { AppError } from '@/core/errors.js'
+import {
+  TemplateNotFoundError,
+  TemplateRenderError,
+  RenderError,
+} from '@/services/renderer/errors.js'
 
 describe('Renderer errors', () => {
   it('TemplateNotFoundError extends AppError', () => {

@@ -10,10 +10,10 @@ import { Prisma } from '#prisma/main'
 import type { CheckinRecord } from '#prisma/main'
 
 import type { CacheClient } from '@/core/cache/client.js'
-import { checkinStatsKey } from '@/core/cache/key-registry.js'
 import type { MainPrismaClient } from '@/core/db/client.js'
 import { isPrismaKnownError } from '@/core/db/utils.js'
 import { Startup } from '@/core/lifecycle/registry.js'
+import { cacheKeyRegistry } from '@/core/registries/index.js'
 import { SHANGHAI_TZ } from '@/core/utils/helpers.js'
 
 export type { CheckinRecord }
@@ -118,7 +118,7 @@ export class CheckinService {
     const userId = BigInt(params.userId)
     const today = params.today
     const todayStr = this._dateToIso(today)
-    const key = checkinStatsKey(groupId, userId)
+    const key = cacheKeyRegistry.buildKey('checkin', 'stats', String(groupId), String(userId))
 
     // 1. 读缓存
     const cached =
@@ -380,7 +380,11 @@ export class CheckinService {
 
     if (total === 0) {
       const empty: CheckinCache = { lastDate: '', streak: 0, total: 0 }
-      await this.cache.set(checkinStatsKey(groupId, userId), empty, CACHE_TTL)
+      await this.cache.set(
+        cacheKeyRegistry.buildKey('checkin', 'stats', String(groupId), String(userId)),
+        empty,
+        CACHE_TTL,
+      )
       return empty
     }
 
@@ -420,7 +424,11 @@ export class CheckinService {
       total,
     }
 
-    await this.cache.set(checkinStatsKey(groupId, userId), cacheData, CACHE_TTL)
+    await this.cache.set(
+      cacheKeyRegistry.buildKey('checkin', 'stats', String(groupId), String(userId)),
+      cacheData,
+      CACHE_TTL,
+    )
     return cacheData
   }
 

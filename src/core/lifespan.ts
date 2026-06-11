@@ -22,6 +22,8 @@ import type { HandlerMethod } from './framework/mapping.js'
 import type { FeatureChecker } from './framework/ports.js'
 import { LifecycleOrchestrator } from './lifecycle/orchestrator.js'
 import { getAllStartups, getAllShutdowns } from './lifecycle/registry.js'
+// 触发 PersonnelService 的 Startup 注册（EchoLoader 不扫描 src/core/，需手动引入）
+import '@/core/personnel/index.js'
 import { BotAPI } from './protocol/api.js'
 import { handlerRegistry } from './registries/handler.js'
 import { ServiceRegistry } from './registries/service-registry.js'

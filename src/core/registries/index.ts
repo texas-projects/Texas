@@ -12,4 +12,3 @@ export { handlerRegistry, HandlerRegistry } from './handler.js'
 export type { HandlerMeta, MethodMeta, HandlerRegistryEntry } from './handler.js'
 
 export { ServiceRegistry } from './service-registry.js'
-export { ConfigRegistry } from './config-registry.js'

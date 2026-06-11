@@ -1,5 +1,5 @@
 /**
- * Handler 注册表 —— 合并原 componentRegistry（类级）与 handlerRegistry（方法级）。
+ * Handler 注册表 —— 统一管理类级元数据（HandlerMeta）与方法级元数据（MethodMeta[]）。
  *
  * 每个 handler 以唯一名称注册，包含类级元数据（HandlerMeta）和方法级元数据列表（MethodMeta[]）。
  */
