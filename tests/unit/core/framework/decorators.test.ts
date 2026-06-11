@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
   Component,
-  Feature,
   MessageScope,
   OnBotOffline,
   OnCommand,
@@ -20,7 +19,6 @@ import {
   Permission,
   SettingNode,
   componentRegistry,
-  featureRegistry,
   handlerRegistry,
   settingNodeRegistry,
 } from '@/core/framework/decorators.js'
@@ -29,7 +27,6 @@ import {
 beforeEach(() => {
   componentRegistry.clear()
   handlerRegistry.clear()
-  featureRegistry.clear()
   settingNodeRegistry.clear()
 })
 
@@ -70,17 +67,9 @@ class SysHandler {
   }
 }
 
-class SchedulerFeature {
-  run(): void {
-    /* noop */
-  }
-}
-
 describe('@Component 装饰器', () => {
   it('应将组件注册到 componentRegistry', () => {
-    Component({ name: 'echo', displayName: '回声', description: '复读消息', defaultEnabled: true })(
-      EchoHandler,
-    )
+    Component({ name: 'echo', displayName: '回声', description: '复读消息' })(EchoHandler)
 
     expect(componentRegistry.has('echo')).toBe(true)
     const meta = componentRegistry.get('echo')
@@ -88,7 +77,6 @@ describe('@Component 装饰器', () => {
     expect(meta?.name).toBe('echo')
     expect(meta?.displayName).toBe('回声')
     expect(meta?.description).toBe('复读消息')
-    expect(meta?.defaultEnabled).toBe(true)
     expect(meta?.system).toBe(false)
     expect(meta?.target).toBe(EchoHandler)
   })
@@ -100,9 +88,7 @@ describe('@Component 装饰器', () => {
     expect(meta?.displayName).toBe('minimal')
     expect(meta?.description).toBe('')
     expect(meta?.tags).toEqual([])
-    expect(meta?.admin).toBe(false)
     expect(meta?.defaultPriority).toBe(50)
-    expect(meta?.defaultEnabled).toBe(false)
     expect(meta?.system).toBe(false)
   })
 
@@ -319,24 +305,6 @@ describe('@OnBotOffline 装饰器', () => {
 
     const meta = handlerRegistry.get(offlineHandler)?.[0]
     expect(meta?.noticeType).toBe('bot_offline')
-  })
-})
-
-describe('@Feature 装饰器', () => {
-  it('应将功能注册到 featureRegistry', () => {
-    Feature({
-      name: 'scheduler',
-      displayName: '定时任务',
-      description: '定时功能',
-      defaultEnabled: true,
-    })(SchedulerFeature)
-
-    expect(featureRegistry.has('scheduler')).toBe(true)
-    const meta = featureRegistry.get('scheduler')
-    expect(meta?.name).toBe('scheduler')
-    expect(meta?.displayName).toBe('定时任务')
-    expect(meta?.defaultEnabled).toBe(true)
-    expect(meta?.target).toBe(SchedulerFeature)
   })
 })
 

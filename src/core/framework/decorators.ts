@@ -66,21 +66,7 @@ export interface ComponentMeta {
   displayName: string
   description: string
   tags: string[]
-  admin: boolean
   defaultPriority: number
-  defaultEnabled: boolean
-  system: boolean
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  target: Function
-}
-
-/** 功能元数据（用于权限管理，不参与事件分发）。 */
-export interface FeatureMeta {
-  name: string
-  displayName: string
-  description: string
-  tags: string[]
-  defaultEnabled: boolean
   system: boolean
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   target: Function
@@ -98,9 +84,6 @@ export const componentRegistry = new Map<string, ComponentMeta>()
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const handlerRegistry = new Map<Function, HandlerMeta[]>()
 
-/** 功能注册表：功能名 → FeatureMeta。 */
-export const featureRegistry = new Map<string, FeatureMeta>()
-
 // ── 类装饰器 ──
 
 /** 组件选项。 */
@@ -109,9 +92,7 @@ export interface ComponentOptions {
   description?: string
   displayName?: string
   tags?: string[]
-  admin?: boolean
   defaultPriority?: number
-  defaultEnabled?: boolean
   /** system=true 时强制启用且不暴露给前端。 */
   system?: boolean
 }
@@ -128,9 +109,7 @@ export function Component(opts: ComponentOptions) {
       displayName: opts.displayName ?? opts.name,
       description: opts.description ?? '',
       tags: opts.tags ?? [],
-      admin: opts.admin ?? false,
       defaultPriority: opts.defaultPriority ?? 50,
-      defaultEnabled: opts.defaultEnabled ?? false,
       system: opts.system ?? false,
       target,
     }
@@ -280,38 +259,6 @@ export function OnBotOffline(opts: BaseHandlerOptions = {}) {
     { mappingType: 'event_type', eventType: 'notice', noticeType: 'bot_offline' },
     opts,
   )
-}
-
-// ── Feature 装饰器 ──
-
-/** Feature 选项（仅注册到功能表，不参与事件分发）。 */
-export interface FeatureOptions {
-  name: string
-  displayName?: string
-  description?: string
-  tags?: string[]
-  defaultEnabled?: boolean
-  system?: boolean
-}
-
-/**
- * 将类标记为可管理功能（非 handler），仅注册到功能表，不参与事件分发。
- * 适用于定时任务、后台服务等无需 handler 的组件。
- */
-export function Feature(opts: FeatureOptions) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  return function (target: Function): void {
-    const meta: FeatureMeta = {
-      name: opts.name,
-      displayName: opts.displayName ?? opts.name,
-      description: opts.description ?? '',
-      tags: opts.tags ?? [],
-      defaultEnabled: opts.defaultEnabled ?? false,
-      system: opts.system ?? false,
-      target,
-    }
-    featureRegistry.set(opts.name, meta)
-  }
 }
 
 // ── Settings 装饰器 re-export ──

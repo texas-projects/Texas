@@ -50,7 +50,6 @@ export async function handlerRoutes(app: FastifyInstance): Promise<void> {
         description: meta.description,
         tags: meta.tags,
         system: meta.system,
-        defaultEnabled: meta.defaultEnabled,
         methods,
       }
     })

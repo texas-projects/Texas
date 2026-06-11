@@ -39,7 +39,6 @@ describe('ComponentScanner', () => {
       name: 'echo-component',
       displayName: '回声',
       description: '测试组件',
-      defaultEnabled: true,
     })(EchoHandler)
 
     const mapping = new CompositeHandlerMapping()
@@ -103,7 +102,7 @@ describe('ComponentScanner', () => {
       configurable: true,
     })
 
-    Component({ name: 'my-handler-comp', defaultEnabled: true })(MyHandlerComp)
+    Component({ name: 'my-handler-comp' })(MyHandlerComp)
 
     const mapping = new CompositeHandlerMapping()
     const scanner = new ComponentScanner()

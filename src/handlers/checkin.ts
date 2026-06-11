@@ -82,7 +82,6 @@ Component({
   displayName: '群签到',
   description: '用户手动签到，回复今日本群排名和连续/累计天数',
   tags: ['fun'],
-  defaultEnabled: true,
 })(CheckinHandler)
 
 SettingNode('user_checkin.enabled', {

@@ -78,7 +78,6 @@ Component({
   displayName: '今日老婆',
   description: '每日群内随机抽取群老婆，每人每群每天一次',
   tags: ['fun'],
-  defaultEnabled: true,
 })(JrlpHandler)
 
 SettingNode('jrlp.enabled', {

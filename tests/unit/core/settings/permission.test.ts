@@ -103,9 +103,7 @@ describe('system 功能直通', () => {
       displayName: '',
       description: '',
       tags: [],
-      admin: false,
       defaultPriority: 0,
-      defaultEnabled: true,
       system: true,
       target: TestHandler,
     })

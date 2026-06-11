@@ -19,7 +19,6 @@ interface HelpItem {
   displayName: string
   description: string
   trigger: string
-  admin: boolean
   tag: string
 }
 
@@ -54,7 +53,6 @@ async function handleList(
       displayName: meta.displayName,
       description: meta.description,
       trigger: '',
-      admin: meta.admin,
       tag,
     }
     const arr = grouped.get(tag) ?? []
@@ -170,7 +168,6 @@ Component({
   displayName: '帮助',
   description: '查看当前可用功能列表',
   tags: [],
-  defaultEnabled: true,
   system: true,
 })(HelpHandler)
 

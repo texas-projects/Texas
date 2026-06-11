@@ -118,7 +118,6 @@ Component({
   displayName: '点赞',
   description: '给自己 QQ 主页点赞，支持手动和每日定时自动点赞',
   tags: ['fun'],
-  defaultEnabled: true,
 })(LikeHandler)
 
 SettingNode('like.enabled', {

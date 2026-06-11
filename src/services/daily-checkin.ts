@@ -159,10 +159,18 @@ export class DailyCheckinService {
 
   private async _getEligibleGroupIds(): Promise<bigint[]> {
     const rows = await this.db.group.findMany({
-      where: { isActive: true, botEnabled: true },
+      where: { isActive: true },
       select: { groupId: true },
     })
-    return rows.map((r) => r.groupId)
+
+    // 通过 SettingsService 过滤 bot.enabled=true 的群
+    const checks = await Promise.all(
+      rows.map(async (r) => {
+        const enabled = await this.settings.get<boolean>('bot.enabled', { group: r.groupId })
+        return enabled ? r.groupId : null
+      }),
+    )
+    return checks.filter((id): id is bigint => id !== null)
   }
 }
 

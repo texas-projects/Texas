@@ -36,9 +36,7 @@ describe('buildSchemaMap', () => {
       displayName: 'My Feature',
       description: '',
       tags: [],
-      admin: false,
       defaultPriority: 10,
-      defaultEnabled: false,
       system: false,
       target: TestHandler,
     })

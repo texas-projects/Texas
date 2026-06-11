@@ -145,7 +145,6 @@ Component({
   displayName: '漂流瓶',
   description: '扔/捞漂流瓶，同池内随机互通，每瓶一次性消耗',
   tags: ['fun'],
-  defaultEnabled: true,
 })(DriftBottleHandler)
 
 SettingNode('drift_bottle.enabled', {

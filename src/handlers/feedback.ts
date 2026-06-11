@@ -133,7 +133,6 @@ Component({
   displayName: '用户反馈',
   description: '用户反馈提交与查询功能',
   tags: ['user', 'feedback'],
-  defaultEnabled: true,
 })(FeedbackHandler)
 
 SettingNode('feedback.enabled', {
