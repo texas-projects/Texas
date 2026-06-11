@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Context } from '@/core/framework/context.js'
-import { componentRegistry, Permission } from '@/core/framework/decorators.js'
+import { Permission } from '@/core/framework/decorators.js'
 import type { PersonnelService } from '@/core/personnel/index.js'
+import { handlerRegistry } from '@/core/registries/handler.js'
 import { SettingNode, settingNodeRegistry } from '@/core/settings/decorators.js'
 import { SettingsPermissionChecker } from '@/core/settings/permission.js'
 import { buildSchemaMap } from '@/core/settings/schema.js'
@@ -73,7 +74,7 @@ class TestHandler {
 
 beforeEach(() => {
   settingNodeRegistry.clear()
-  componentRegistry.clear()
+  handlerRegistry.clear()
 })
 
 function buildChecker(settingsValues: Record<string, unknown> = {}, adminQqs: bigint[] = []) {
@@ -97,15 +98,18 @@ function buildChecker(settingsValues: Record<string, unknown> = {}, adminQqs: bi
 describe('system 功能直通', () => {
   it('system 组件跳过所有检查', async () => {
     settingNodeRegistry.clear()
-    componentRegistry.clear()
-    componentRegistry.set('sys_feature', {
-      name: 'sys_feature',
-      displayName: '',
-      description: '',
-      tags: [],
-      defaultPriority: 0,
-      system: true,
-      target: TestHandler,
+    handlerRegistry.clear()
+    handlerRegistry.register('sys_feature', {
+      meta: {
+        name: 'sys_feature',
+        displayName: '',
+        description: '',
+        tags: [],
+        defaultPriority: 0,
+        system: true,
+        target: TestHandler,
+      },
+      methods: [],
     })
 
     const schemaMap = buildSchemaMap()

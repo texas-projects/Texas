@@ -3,7 +3,7 @@
  */
 
 import { getLogger } from '@logger'
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import { ok, fail } from '@/core/utils/response.js'
 
@@ -163,7 +163,7 @@ async function collectQueueState(app: FastifyInstance): Promise<QueueStateResult
 /**
  * 任务队列路由插件。
  */
-export async function queueRoutes(app: FastifyInstance): Promise<void> {
+const queueRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/queue/scheduled-tasks — 获取已注册的定时任务列表。 */
   app.get('/api/queue/scheduled-tasks', async (_req: FastifyRequest, reply: FastifyReply) => {
     const state = getState(app)
@@ -386,3 +386,6 @@ export async function queueRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default queueRoutes
+export { queueRoutes }

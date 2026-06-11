@@ -11,17 +11,55 @@ import { resolve } from 'node:path'
 import fastifyStatic from '@fastify/static'
 import fastifyWebsocket from '@fastify/websocket'
 import { createLogger, setLogger, logger } from '@logger'
-import Fastify, { type FastifyInstance } from 'fastify'
+import Fastify, { type FastifyInstance, type FastifyPluginAsync } from 'fastify'
+
+import pkg from '../../package.json' with { type: 'json' }
 
 import { loadConfig } from './config.js'
 import { setupLifecycle } from './lifespan.js'
-import { metricsRegistry } from './monitoring/metrics.js'
-import { VERSION, DESCRIPTION } from './version.js'
 
-import { authPlugin } from '@/apis/plugins/auth.js'
-import { corsPlugin } from '@/apis/plugins/cors.js'
-import { swaggerPlugin } from '@/apis/plugins/swagger.js'
-import { registerRoutes } from '@/apis/router.js'
+import { loadEchoConfig } from '@/core/framework/load-echo-config.js'
+import { EchoLoader } from '@/core/framework/loader.js'
+import type { RouteEchoEntry } from '@/core/framework/loader.js'
+import { metricsRegistry } from '@/core/monitoring/metrics.js'
+import { authPlugin } from '@/core/plugins/auth.js'
+import { corsPlugin } from '@/core/plugins/cors.js'
+import { swaggerPlugin } from '@/core/plugins/swagger.js'
+
+// ── 路由注册辅助函数 ──
+
+/** 通过 EchoLoader 发现并注册 src/apis/ 下所有业务路由插件。 */
+async function _registerEchoRoutes(app: FastifyInstance): Promise<void> {
+  const echoConfig = await loadEchoConfig()
+  const baseDir = resolve(import.meta.dirname, '..', '..')
+  const loader = new EchoLoader(echoConfig, baseDir)
+  const routeEntries = await loader.discoverByType('route')
+  for (const entry of routeEntries) {
+    await app.register((entry as RouteEchoEntry).plugin as FastifyPluginAsync)
+  }
+}
+
+/** 注册核心领域 API 路由（LLM、人员管理），这些路由未随 EchoLoader 发现，硬编码注册。 */
+async function _registerCoreRoutes(app: FastifyInstance): Promise<void> {
+  try {
+    const { llmRoutes } = await import('@/core/llm/api.js')
+    await app.register(
+      async (fastify) => {
+        await llmRoutes(fastify)
+      },
+      { prefix: '/api/llm' },
+    )
+  } catch (err) {
+    app.log.warn({ err }, 'LLM 路由注册失败')
+  }
+
+  try {
+    const { registerPersonnelRoutes } = await import('@/core/personnel/api.js')
+    await registerPersonnelRoutes(app)
+  } catch (err) {
+    app.log.warn({ err }, '人员管理路由注册失败')
+  }
+}
 
 // ── 主启动函数 ──
 
@@ -59,7 +97,8 @@ async function bootstrap(): Promise<void> {
   await authPlugin(app)
 
   // ── 注册 API 路由 ──
-  await registerRoutes(app)
+  await _registerEchoRoutes(app)
+  await _registerCoreRoutes(app)
 
   // ── 系统端点 ──
 
@@ -69,8 +108,8 @@ async function bootstrap(): Promise<void> {
     const connMgr = state.connMgr as { isConnected?: boolean } | undefined
     return {
       status: 'healthy',
-      version: VERSION,
-      description: DESCRIPTION,
+      version: pkg.version,
+      description: pkg.description,
       ws_connected: connMgr?.isConnected ?? false,
     }
   })

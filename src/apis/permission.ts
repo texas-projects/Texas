@@ -4,7 +4,7 @@
  * 替代原 /api/permissions 路由，通过 SettingsService 读写配置项。
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { SettingsService } from '@/core/settings/service.js'
 import { ok, fail } from '@/core/utils/response.js'
@@ -27,7 +27,7 @@ interface BatchSetBody {
 /**
  * 配置管理路由插件。
  */
-export async function permissionRoutes(app: FastifyInstance): Promise<void> {
+const permissionRoutes: FastifyPluginAsync = async (app) => {
   // ── Schema 查询 ──
 
   /** GET /api/settings/schemas — 获取所有配置项 Schema（供前端渲染表单）。 */
@@ -125,3 +125,6 @@ export async function permissionRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default permissionRoutes
+export { permissionRoutes }

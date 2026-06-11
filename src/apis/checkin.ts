@@ -2,7 +2,7 @@
  * 用户群签到管理 REST API —— /api/checkin。
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok } from '@/core/utils/response.js'
@@ -23,7 +23,7 @@ async function getCheckinSvc(app: FastifyInstance): Promise<CheckinService> {
 /**
  * 签到管理路由插件。
  */
-export async function checkinRoutes(app: FastifyInstance): Promise<void> {
+const checkinRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/checkin/records — 分页查询签到记录。 */
   app.get(
     '/api/checkin/records',
@@ -132,3 +132,6 @@ export async function checkinRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default checkinRoutes
+export { checkinRoutes }

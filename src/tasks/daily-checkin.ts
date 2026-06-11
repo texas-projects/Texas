@@ -8,6 +8,7 @@ import type { MainPrismaClient } from '@/core/db/client.js'
 import type { MinimalSettingSchema } from '@/core/settings/query.js'
 import { getSettingValue } from '@/core/settings/query.js'
 import type { BotActionJobResult } from '@/core/tasks/models.js'
+import type { TaskDefinition } from '@/core/tasks/types.js'
 
 export const JOB_NAME = 'daily-checkin' as const
 
@@ -52,4 +53,18 @@ export async function dailyCheckinProcessor(
   }
 
   return { type: 'bot-action', calls }
+}
+
+export const taskDefinition: TaskDefinition = {
+  jobName: 'daily_checkin',
+  requires: ['db', 'cache'],
+  concurrency: 1,
+  schedule: { cron: '0 0 * * *', tz: 'Asia/Shanghai' },
+  settings: {
+    'bot.enabled': { key: 'bot.enabled', type: 'boolean', default: true },
+    'daily_checkin.enabled': { key: 'daily_checkin.enabled', type: 'boolean', default: false },
+  },
+  processor: async (job: Job, deps: Record<string, unknown>): Promise<BotActionJobResult> => {
+    return dailyCheckinProcessor(job, deps as unknown as CheckinWorkerDeps)
+  },
 }

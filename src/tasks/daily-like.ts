@@ -4,6 +4,7 @@ import type { Job } from 'bullmq'
 
 import type { MainPrismaClient } from '@/core/db/client.js'
 import type { BotActionJobResult } from '@/core/tasks/models.js'
+import type { TaskDefinition } from '@/core/tasks/types.js'
 
 export const JOB_NAME = 'daily-like' as const
 
@@ -25,4 +26,14 @@ export async function dailyLikeProcessor(
   }))
 
   return { type: 'bot-action', calls }
+}
+
+export const taskDefinition: TaskDefinition = {
+  jobName: 'daily_like',
+  requires: ['db', 'cache'],
+  concurrency: 1,
+  schedule: { cron: '0 0 * * *', tz: 'Asia/Shanghai' },
+  processor: async (job: Job, deps: Record<string, unknown>): Promise<BotActionJobResult> => {
+    return dailyLikeProcessor(job, deps as unknown as LikeWorkerDeps)
+  },
 }

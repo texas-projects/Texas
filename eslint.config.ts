@@ -76,5 +76,21 @@ export default tseslint.config(
       '@typescript-eslint/no-dynamic-delete': 'off',
     },
   },
+  {
+    files: ['src/core/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/handlers/*', '@/services/*', '@/tasks/*', '@/apis/*'],
+              message: 'core 目录禁止导入外部业务模块',
+            },
+          ],
+        },
+      ],
+    },
+  },
   prettier,
 )

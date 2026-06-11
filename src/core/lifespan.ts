@@ -4,6 +4,7 @@
 
 import { resolve } from 'node:path'
 
+import { getLogger } from '@logger'
 import type { FastifyInstance } from 'fastify'
 import type { Redis } from 'ioredis'
 
@@ -13,15 +14,20 @@ import { createMainDb, createChatDb } from './db/client.js'
 import { EventDispatcher } from './framework/dispatcher.js'
 import { LoggingInterceptor } from './framework/interceptors/logging.js'
 import { SessionInterceptor } from './framework/interceptors/session.js'
+import { loadEchoConfig } from './framework/load-echo-config.js'
+import { EchoLoader } from './framework/loader.js'
+import type { TaskEchoEntry } from './framework/loader.js'
 import { CompositeHandlerMapping } from './framework/mapping.js'
+import type { HandlerMethod } from './framework/mapping.js'
 import type { FeatureChecker } from './framework/ports.js'
-import { ComponentScanner } from './framework/scanner.js'
 import { LifecycleOrchestrator } from './lifecycle/orchestrator.js'
 import { getAllStartups, getAllShutdowns } from './lifecycle/registry.js'
 import { BotAPI } from './protocol/api.js'
+import { handlerRegistry } from './registries/handler.js'
 import { ServiceRegistry } from './registries/service-registry.js'
 import { createBullMQConnection, getTaskQueue } from './tasks/broker.js'
 import { TaskExecutor } from './tasks/executor.js'
+import { setTaskDefinitions } from './tasks/scheduler.js'
 import { createRedis, checkRedisReachable } from './utils/redis-factory.js'
 import { ConnectionManager } from './ws/connection.js'
 import { registerWsRoute } from './ws/server.js'
@@ -77,7 +83,6 @@ interface AppState {
   botApi: BotAPI
   connMgr: ConnectionManager
   dispatcher: EventDispatcher
-  scanner: ComponentScanner
   // 任务
   taskExecutor: TaskExecutor
   queue: ReturnType<typeof getTaskQueue>
@@ -120,19 +125,8 @@ async function _startup(
   // 4. 构建复合处理器映射
   const composite = new CompositeHandlerMapping()
 
-  // 5. ComponentScanner 扫描 handlers 和 services（触发 @Startup/@Shutdown 副作用）
-  const scanner = new ComponentScanner()
-  const srcRoot = resolve('src')
-  await scanner.scan(
-    [resolve(srcRoot, 'handlers')],
-    [
-      resolve(srcRoot, 'services'),
-      resolve(srcRoot, 'core', 'renderer'),
-      resolve(srcRoot, 'core', 'settings'),
-      resolve(srcRoot, 'render-templates'),
-    ],
-    composite,
-  )
+  // 5. EchoLoader 发现并加载 handlers、services、tasks（触发 @Startup/@Shutdown 副作用）
+  await _loadEchoes(composite)
 
   // 6. 构建 Dispatcher 并连接到 connMgr（解决 setupLifecycle 阶段的前向引用）
   const dispatcher = new EventDispatcher(composite, [
@@ -162,7 +156,6 @@ async function _startup(
     bot_api: botApi,
     conn_mgr: connMgr,
     dispatcher,
-    scanner,
     queue,
   }
 
@@ -196,7 +189,6 @@ async function _startup(
     botApi,
     connMgr,
     dispatcher,
-    scanner,
     taskExecutor,
     queue,
     serviceRegistry,
@@ -204,6 +196,51 @@ async function _startup(
   }
 
   app.log.info(`Aemeath 已启动，等待 NapCat 连接 (host=${config.HOST} port=${String(config.PORT)})`)
+}
+
+// ── EchoLoader 辅助函数 ──
+
+/**
+ * 通过 EchoLoader 加载 handler、service、task 类型的 echo，
+ * 触发装饰器副作用（@Startup/@Shutdown 注册），
+ * 并将 task definitions 传给 scheduler，最后将 handler 注册到 composite mapping。
+ */
+async function _loadEchoes(composite: CompositeHandlerMapping): Promise<void> {
+  const echoConfig = await loadEchoConfig()
+  const baseDir = resolve(import.meta.dirname, '..', '..')
+  const loader = new EchoLoader(echoConfig, baseDir)
+
+  await loader.discoverByType('handler')
+  await loader.discoverByType('service')
+
+  const taskEntries = (await loader.discoverByType('task')) as TaskEchoEntry[]
+  setTaskDefinitions(taskEntries.map((e) => e.taskDefinition))
+
+  _registerHandlersToMapping(composite)
+}
+
+/** 遍历 HandlerRegistry，实例化所有组件并将处理器方法注册到 CompositeHandlerMapping。 */
+function _registerHandlersToMapping(composite: CompositeHandlerMapping): void {
+  const log = getLogger('lifespan')
+  for (const [componentName, entry] of handlerRegistry.entries()) {
+    const instance = new (entry.meta.target as new () => object)()
+    const defaultPriority = entry.meta.defaultPriority
+
+    let handlerCount = 0
+    for (const methodMeta of entry.methods) {
+      const priority = methodMeta.priority ?? defaultPriority
+      composite.register({
+        instance,
+        method: methodMeta.method,
+        priority,
+        componentName,
+        meta: methodMeta as unknown as HandlerMethod['meta'],
+      })
+      handlerCount++
+    }
+
+    log.info(`组件已注册：${componentName}，handler 数量：${String(handlerCount)}`)
+  }
 }
 
 // ── 关闭逻辑 ──

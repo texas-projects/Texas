@@ -5,6 +5,9 @@
  * 增量事件处理已迁移至 PersonnelEventService（events.ts）。
  */
 
+import './cache-keys.js'
+import './metrics.js'
+
 import type { CacheClient } from '@/core/cache/client.js'
 import { adminSetKey, userRelationKey, USER_RELATION_GLOB } from '@/core/cache/key-registry.js'
 import type { MainPrismaClient } from '@/core/db/client.js'

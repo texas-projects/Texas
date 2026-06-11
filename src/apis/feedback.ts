@@ -2,7 +2,7 @@
  * 用户反馈 REST API 路由 —— /api/feedbacks。
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok, fail } from '@/core/utils/response.js'
@@ -52,7 +52,7 @@ function feedbackToDict(f: Record<string, unknown>): Record<string, unknown> {
 /**
  * 反馈管理路由插件。
  */
-export async function feedbackRoutes(app: FastifyInstance): Promise<void> {
+const feedbackRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/feedbacks — 分页查询反馈列表。 */
   app.get(
     '/api/feedbacks',
@@ -145,3 +145,6 @@ export async function feedbackRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default feedbackRoutes
+export { feedbackRoutes }

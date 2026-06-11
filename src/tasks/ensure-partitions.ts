@@ -4,6 +4,7 @@ import type { Job } from 'bullmq'
 
 import type { ChatPrismaClient } from '@/core/db/client.js'
 import type { SelfContainedJobResult } from '@/core/tasks/models.js'
+import type { TaskDefinition } from '@/core/tasks/types.js'
 
 export const JOB_NAME = 'ensure-chat-partitions' as const
 
@@ -16,4 +17,14 @@ export async function ensurePartitionsProcessor(
   _deps: PartitionsWorkerDeps,
 ): Promise<SelfContainedJobResult> {
   return { type: 'self-contained', summary: { status: 'not-implemented' } }
+}
+
+export const taskDefinition: TaskDefinition = {
+  jobName: 'ensure_partitions',
+  requires: ['chat_db'],
+  concurrency: 1,
+  schedule: { cron: '0 1 25 * *', tz: 'Asia/Shanghai' },
+  processor: async (job: Job, deps: Record<string, unknown>): Promise<SelfContainedJobResult> => {
+    return ensurePartitionsProcessor(job, deps as unknown as PartitionsWorkerDeps)
+  },
 }

@@ -6,9 +6,10 @@ import type { SettingNodeSchema } from './schema.js'
 import type { SettingsService } from './service.js'
 
 import type { Context } from '@/core/framework/context.js'
-import { componentRegistry, Permission } from '@/core/framework/decorators.js'
+import { Permission } from '@/core/framework/decorators.js'
 import type { FeatureChecker } from '@/core/framework/ports.js'
 import type { PersonnelService } from '@/core/personnel/index.js'
+import { handlerRegistry } from '@/core/registries/handler.js'
 
 /** dispatcher 注入到 Context 的 handler 方法元数据。 */
 interface HandlerMethod {
@@ -105,9 +106,9 @@ export class SettingsPermissionChecker implements FeatureChecker {
     return false
   }
 
-  /** 检查功能是否为 system（从 componentRegistry 判断）。 */
+  /** 检查功能是否为 system（从 HandlerRegistry 判断）。 */
   private _isSystem(featureName: string): boolean {
-    const meta = componentRegistry.get(featureName)
-    return meta?.system === true
+    const entry = handlerRegistry.get(featureName)
+    return entry?.meta.system === true
   }
 }

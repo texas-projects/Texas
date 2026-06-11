@@ -2,6 +2,13 @@
  * 控制器与处理器注册装饰器（替代 Python 装饰器），使用全局注册表副作用模式。
  */
 
+import { handlerRegistry as _handlerRegistry } from '@/core/registries/handler.js'
+import type {
+  HandlerMeta as HandlerClassMeta,
+  MethodMeta,
+  HandlerRegistryEntry,
+} from '@/core/registries/handler.js'
+
 // ── 枚举与常量 ──
 
 /** 权限等级枚举。 */
@@ -24,7 +31,7 @@ export type MessageScope = (typeof MessageScope)[keyof typeof MessageScope]
 
 // ── 元数据类型 ──
 
-/** 处理器方法元数据。 */
+/** 处理器方法元数据（用于 mapping 路由）。 */
 export interface HandlerMeta {
   mappingType:
     | 'command'
@@ -60,34 +67,23 @@ export interface HandlerMeta {
   requestType?: string | null
 }
 
-/** 组件类元数据。 */
-export interface ComponentMeta {
-  name: string
-  displayName: string
-  description: string
-  tags: string[]
-  defaultPriority: number
-  system: boolean
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  target: Function
-}
+/** 组件类元数据（兼容别名，实际为 HandlerClassMeta）。 */
+export type ComponentMeta = HandlerClassMeta
 
 // ── 全局注册表 ──
 
-/** 组件注册表：组件名 → ComponentMeta。 */
-export const componentRegistry = new Map<string, ComponentMeta>()
-
 /**
- * 处理器注册表：方法函数引用 → HandlerMeta 列表。
- * 支持同一方法叠加多个装饰器。
+ * 方法级 pending 元数据（按方法函数引用索引）。
+ * 方法装饰器将元数据暂存于此，类装饰器 @Handler 执行时统一收集。
+ * @internal 仅供测试和框架内部使用。
  */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export const handlerRegistry = new Map<Function, HandlerMeta[]>()
+export const _pendingMethods = new Map<Function, HandlerMeta[]>()
 
 // ── 类装饰器 ──
 
-/** 组件选项。 */
-export interface ComponentOptions {
+/** Handler 选项（原 ComponentOptions）。 */
+export interface HandlerOptions {
   name: string
   description?: string
   displayName?: string
@@ -97,14 +93,17 @@ export interface ComponentOptions {
   system?: boolean
 }
 
+/** 兼容别名。 */
+export type ComponentOptions = HandlerOptions
+
 /**
- * 将类标记为功能组件，聚合多个 handler 方法并注册功能元数据。
- * 使用方式：`@Component({ name: 'echo', ... })`
+ * 将类标记为 Handler（功能组件），收集其方法装饰器元数据并注册到 HandlerRegistry。
+ * 使用方式：`Handler({ name: 'echo', ... })(EchoHandler)`
  */
-export function Component(opts: ComponentOptions) {
+export function Handler(opts: HandlerOptions) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   return function (target: Function): void {
-    const meta: ComponentMeta = {
+    const meta: HandlerClassMeta = {
       name: opts.name,
       displayName: opts.displayName ?? opts.name,
       description: opts.description ?? '',
@@ -113,9 +112,32 @@ export function Component(opts: ComponentOptions) {
       system: opts.system ?? false,
       target,
     }
-    componentRegistry.set(opts.name, meta)
+
+    // 收集该类原型方法上的 pending 元数据
+    const methods: MethodMeta[] = []
+    const proto = target.prototype as Record<string, unknown>
+    for (const methodName of Object.getOwnPropertyNames(proto)) {
+      if (methodName === 'constructor') continue
+      const fn = proto[methodName]
+      if (typeof fn !== 'function') continue
+      const metas = _pendingMethods.get(fn)
+      if (metas && metas.length > 0) {
+        for (const m of metas) {
+          methods.push({
+            ...m,
+            method: fn,
+          })
+        }
+      }
+    }
+
+    const entry: HandlerRegistryEntry = { meta, methods }
+    _handlerRegistry.register(opts.name, entry)
   }
 }
+
+/** 兼容别名：Component = Handler。 */
+export const Component = Handler
 
 // ── 方法装饰器内部辅助 ──
 
@@ -149,9 +171,9 @@ function makeHandlerDecorator(
       displayName: opts.displayName ?? '',
       description: opts.description ?? '',
     }
-    const existing = handlerRegistry.get(target) ?? []
+    const existing = _pendingMethods.get(target) ?? []
     existing.push(fullMeta)
-    handlerRegistry.set(target, existing)
+    _pendingMethods.set(target, existing)
   }
 }
 

@@ -6,7 +6,7 @@ import type { SettingNodeMeta } from './decorators.js'
 import { settingNodeRegistry } from './decorators.js'
 
 import type { MainPrismaClient } from '@/core/db/client.js'
-import { componentRegistry } from '@/core/framework/decorators.js'
+import { handlerRegistry } from '@/core/registries/handler.js'
 
 // ── 类型定义 ──
 
@@ -52,8 +52,8 @@ export function buildSchemaMap(): ReadonlyMap<string, SettingNodeSchema> {
   // 遍历 settingNodeRegistry，关联 Component 名称与显示名称
   for (const [target, nodes] of settingNodeRegistry) {
     const ownerName = findComponentName(target) ?? '__unknown__'
-    const ownerMeta = componentRegistry.get(ownerName)
-    const ownerDisplayName = ownerMeta?.displayName ?? ownerName
+    const ownerEntry = handlerRegistry.get(ownerName)
+    const ownerDisplayName = ownerEntry?.meta.displayName ?? ownerName
     for (const node of nodes) {
       map.set(node.key, { ...node, owner: ownerName, ownerDisplayName })
     }
@@ -67,8 +67,8 @@ export function buildSchemaMap(): ReadonlyMap<string, SettingNodeSchema> {
  */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 function findComponentName(target: Function): string | undefined {
-  for (const [, meta] of componentRegistry) {
-    if (meta.target === target) return meta.name
+  for (const entry of handlerRegistry.values()) {
+    if (entry.meta.target === target) return entry.meta.name
   }
   return undefined
 }

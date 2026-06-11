@@ -3,7 +3,7 @@
  */
 
 import { getLogger } from '@logger'
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import { ok, fail } from '@/core/utils/response.js'
 
@@ -27,7 +27,7 @@ interface BotProfileUpdateBody {
 /**
  * Bot 信息管理路由插件。
  */
-export async function botRoutes(app: FastifyInstance): Promise<void> {
+const botRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/bot/info — 获取 Bot 登录信息（昵称、QQ 号、头像）。 */
   app.get('/api/bot/info', async (_req: FastifyRequest, reply: FastifyReply) => {
     const state = getState(app)
@@ -167,3 +167,6 @@ export async function botRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default botRoutes
+export { botRoutes }

@@ -3,7 +3,7 @@
  */
 
 import { getLogger } from '@logger'
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok, fail } from '@/core/utils/response.js'
@@ -41,7 +41,7 @@ function recordToDict(r: Record<string, unknown>): Record<string, unknown> {
 /**
  * 今日老婆管理路由插件。
  */
-export async function jrlpRoutes(app: FastifyInstance): Promise<void> {
+const jrlpRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/jrlp/records — 分页查询抽取/预设记录。 */
   app.get(
     '/api/jrlp/records',
@@ -142,3 +142,6 @@ export async function jrlpRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default jrlpRoutes
+export { jrlpRoutes }

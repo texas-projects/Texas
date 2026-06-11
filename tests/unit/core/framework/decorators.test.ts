@@ -18,15 +18,15 @@ import {
   OnStartsWith,
   Permission,
   SettingNode,
-  componentRegistry,
-  handlerRegistry,
+  _pendingMethods,
   settingNodeRegistry,
 } from '@/core/framework/decorators.js'
+import { handlerRegistry } from '@/core/registries/handler.js'
 
 // 测试前清空全局注册表，避免跨测试污染
 beforeEach(() => {
-  componentRegistry.clear()
   handlerRegistry.clear()
+  _pendingMethods.clear()
   settingNodeRegistry.clear()
 })
 
@@ -71,8 +71,8 @@ describe('@Component 装饰器', () => {
   it('应将组件注册到 componentRegistry', () => {
     Component({ name: 'echo', displayName: '回声', description: '复读消息' })(EchoHandler)
 
-    expect(componentRegistry.has('echo')).toBe(true)
-    const meta = componentRegistry.get('echo')
+    expect(handlerRegistry.has('echo')).toBe(true)
+    const meta = handlerRegistry.get('echo')?.meta
     expect(meta).toBeDefined()
     expect(meta?.name).toBe('echo')
     expect(meta?.displayName).toBe('回声')
@@ -84,7 +84,7 @@ describe('@Component 装饰器', () => {
   it('应提供合理的默认值', () => {
     Component({ name: 'minimal' })(MinimalHandler)
 
-    const meta = componentRegistry.get('minimal')
+    const meta = handlerRegistry.get('minimal')?.meta
     expect(meta?.displayName).toBe('minimal')
     expect(meta?.description).toBe('')
     expect(meta?.tags).toEqual([])
@@ -95,7 +95,7 @@ describe('@Component 装饰器', () => {
   it('system=true 应正确记录', () => {
     Component({ name: 'sys', system: true })(SysHandler)
 
-    expect(componentRegistry.get('sys')?.system).toBe(true)
+    expect(handlerRegistry.get('sys')?.meta.system).toBe(true)
   })
 })
 
@@ -106,8 +106,8 @@ describe('@OnCommand 装饰器', () => {
     }
     OnCommand('echo', { permission: Permission.ANYONE, scope: MessageScope.GROUP })(handleEcho)
 
-    expect(handlerRegistry.has(handleEcho)).toBe(true)
-    const metas = handlerRegistry.get(handleEcho)
+    expect(_pendingMethods.has(handleEcho)).toBe(true)
+    const metas = _pendingMethods.get(handleEcho)
     expect(metas).toHaveLength(1)
     const meta = metas?.[0]
     expect(meta?.mappingType).toBe('command')
@@ -123,7 +123,7 @@ describe('@OnCommand 装饰器', () => {
     OnCommand('foo')(multiHandler)
     OnCommand('bar')(multiHandler)
 
-    const metas = handlerRegistry.get(multiHandler)
+    const metas = _pendingMethods.get(multiHandler)
     expect(metas).toHaveLength(2)
     expect(metas?.[0]?.cmd).toBe('foo')
     expect(metas?.[1]?.cmd).toBe('bar')
@@ -135,7 +135,7 @@ describe('@OnCommand 装饰器', () => {
     }
     OnCommand('admin-cmd', { admin: true })(adminHandler)
 
-    const meta = handlerRegistry.get(adminHandler)?.[0]
+    const meta = _pendingMethods.get(adminHandler)?.[0]
     expect(meta?.permission).toBe(Permission.ADMIN)
   })
 
@@ -145,7 +145,7 @@ describe('@OnCommand 装饰器', () => {
     }
     OnCommand('ping', { aliases: new Set(['p', 'pong']) })(aliasHandler)
 
-    const meta = handlerRegistry.get(aliasHandler)?.[0]
+    const meta = _pendingMethods.get(aliasHandler)?.[0]
     expect(meta?.aliases).toEqual(new Set(['p', 'pong']))
   })
 })
@@ -157,7 +157,7 @@ describe('@OnRegex 装饰器', () => {
     }
     OnRegex('hello\\s+world')(regexHandler)
 
-    const meta = handlerRegistry.get(regexHandler)?.[0]
+    const meta = _pendingMethods.get(regexHandler)?.[0]
     expect(meta?.mappingType).toBe('regex')
     expect(meta?.pattern).toBe('hello\\s+world')
     expect(meta?.compiledPattern).toBeInstanceOf(RegExp)
@@ -172,7 +172,7 @@ describe('@OnKeyword 装饰器', () => {
     }
     OnKeyword(new Set(['cat', 'dog']))(kwHandler)
 
-    const meta = handlerRegistry.get(kwHandler)?.[0]
+    const meta = _pendingMethods.get(kwHandler)?.[0]
     expect(meta?.mappingType).toBe('keyword')
     expect(meta?.keywords).toEqual(new Set(['cat', 'dog']))
   })
@@ -185,7 +185,7 @@ describe('@OnStartsWith 装饰器', () => {
     }
     OnStartsWith('!cmd')(swHandler)
 
-    const meta = handlerRegistry.get(swHandler)?.[0]
+    const meta = _pendingMethods.get(swHandler)?.[0]
     expect(meta?.mappingType).toBe('startswith')
     expect(meta?.prefix).toBe('!cmd')
   })
@@ -198,7 +198,7 @@ describe('@OnEndsWith 装饰器', () => {
     }
     OnEndsWith('吗？')(ewHandler)
 
-    const meta = handlerRegistry.get(ewHandler)?.[0]
+    const meta = _pendingMethods.get(ewHandler)?.[0]
     expect(meta?.mappingType).toBe('endswith')
     expect(meta?.suffix).toBe('吗？')
   })
@@ -211,7 +211,7 @@ describe('@OnFullMatch 装饰器', () => {
     }
     OnFullMatch('菜单')(fmHandler)
 
-    const meta = handlerRegistry.get(fmHandler)?.[0]
+    const meta = _pendingMethods.get(fmHandler)?.[0]
     expect(meta?.mappingType).toBe('fullmatch')
     expect(meta?.text).toBe('菜单')
   })
@@ -224,7 +224,7 @@ describe('@OnEvent 装饰器', () => {
     }
     OnEvent('notice')(evHandler)
 
-    const meta = handlerRegistry.get(evHandler)?.[0]
+    const meta = _pendingMethods.get(evHandler)?.[0]
     expect(meta?.mappingType).toBe('event_type')
     expect(meta?.eventType).toBe('notice')
   })
@@ -237,7 +237,7 @@ describe('@OnNotice 装饰器', () => {
     }
     OnNotice('group_ban', 'ban')(noticeHandler)
 
-    const meta = handlerRegistry.get(noticeHandler)?.[0]
+    const meta = _pendingMethods.get(noticeHandler)?.[0]
     expect(meta?.eventType).toBe('notice')
     expect(meta?.noticeType).toBe('group_ban')
     expect(meta?.subType).toBe('ban')
@@ -251,7 +251,7 @@ describe('@OnRequest 装饰器', () => {
     }
     OnRequest('friend')(reqHandler)
 
-    const meta = handlerRegistry.get(reqHandler)?.[0]
+    const meta = _pendingMethods.get(reqHandler)?.[0]
     expect(meta?.eventType).toBe('request')
     expect(meta?.requestType).toBe('friend')
   })
@@ -264,7 +264,7 @@ describe('@OnMessageSent 装饰器', () => {
     }
     OnMessageSent()(sentHandler)
 
-    const meta = handlerRegistry.get(sentHandler)?.[0]
+    const meta = _pendingMethods.get(sentHandler)?.[0]
     expect(meta?.eventType).toBe('message_sent')
   })
 })
@@ -276,7 +276,7 @@ describe('@OnPoke 装饰器', () => {
     }
     OnPoke()(pokeHandler)
 
-    const meta = handlerRegistry.get(pokeHandler)?.[0]
+    const meta = _pendingMethods.get(pokeHandler)?.[0]
     expect(meta?.eventType).toBe('notice')
     expect(meta?.noticeType).toBe('notify')
     expect(meta?.subType).toBe('poke')
@@ -290,7 +290,7 @@ describe('@OnEssence 装饰器', () => {
     }
     OnEssence('add')(essenceHandler)
 
-    const meta = handlerRegistry.get(essenceHandler)?.[0]
+    const meta = _pendingMethods.get(essenceHandler)?.[0]
     expect(meta?.noticeType).toBe('essence')
     expect(meta?.subType).toBe('add')
   })
@@ -303,7 +303,7 @@ describe('@OnBotOffline 装饰器', () => {
     }
     OnBotOffline()(offlineHandler)
 
-    const meta = handlerRegistry.get(offlineHandler)?.[0]
+    const meta = _pendingMethods.get(offlineHandler)?.[0]
     expect(meta?.noticeType).toBe('bot_offline')
   })
 })

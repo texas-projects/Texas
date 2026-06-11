@@ -2,7 +2,7 @@
  * 点赞管理 REST API —— /api/like。
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok } from '@/core/utils/response.js'
@@ -27,7 +27,7 @@ function ceilDiv(a: number, b: number): number {
 /**
  * 点赞管理路由插件。
  */
-export async function likeRoutes(app: FastifyInstance): Promise<void> {
+const likeRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/like/tasks — 分页查询已注册的定时点赞任务列表。 */
   app.get(
     '/api/like/tasks',
@@ -139,3 +139,6 @@ export async function likeRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default likeRoutes
+export { likeRoutes }

@@ -2,7 +2,7 @@
  * 帮助文档模板 —— 渲染功能列表页面。
  */
 
-import type { SatoriElement, TemplateFunction } from '@/core/renderer/types.js'
+import type { SatoriElement, TemplateFunction } from '@/services/renderer/types.js'
 
 export interface HelpData {
   title: string

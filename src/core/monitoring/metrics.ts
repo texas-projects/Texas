@@ -1,162 +1,103 @@
 /**
- * Prometheus 指标定义 —— 对应 Python 侧的 prometheus_client 指标。
+ * Prometheus 指标定义 —— 通过 MetricRegistry 自注册模式统一管理。
+ *
+ * 指标按领域拆分：
+ *  - 通用基础设施指标（WS、事件、API、HTTP）定义于本文件
+ *  - 人员管理指标已迁移至 @/core/personnel/metrics.js
  */
 
-import { Counter, Gauge, Histogram, Registry } from 'prom-client'
+import { metricRegistry } from '@/core/registries/index.js'
 
-/** 全局指标注册表（独立实例，避免污染 prom-client 默认注册表）。 */
-export const metricsRegistry = new Registry()
+/**
+ * 兼容 prom-client Registry 接口的薄包装，供 main.ts 的 /metrics 端点使用。
+ * 委托给 MetricRegistry 内部的 Registry 实例。
+ */
+export const metricsRegistry = {
+  metrics: () => metricRegistry.collect(),
+  get contentType(): string {
+    return metricRegistry.registry.contentType
+  },
+}
 
 // ── WebSocket 指标 ──
 
-export const wsConnected = new Gauge({
-  name: 'aemeath_ws_connected',
-  help: 'Number of active NapCat WS connections',
-  registers: [metricsRegistry],
-})
+export const wsConnected = metricRegistry.gauge(
+  'aemeath_ws_connected',
+  'Number of active NapCat WS connections',
+)
 
-export const wsMessagesReceived = new Counter({
-  name: 'aemeath_ws_messages_received_total',
-  help: 'WS messages received from NapCat',
-  labelNames: ['post_type'] as const,
-  registers: [metricsRegistry],
-})
+export const wsMessagesReceived = metricRegistry.counter(
+  'aemeath_ws_messages_received_total',
+  'WS messages received from NapCat',
+  ['post_type'],
+)
 
-export const wsMessagesSent = new Counter({
-  name: 'aemeath_ws_messages_sent_total',
-  help: 'WS messages sent to NapCat',
-  registers: [metricsRegistry],
-})
+export const wsMessagesSent = metricRegistry.counter(
+  'aemeath_ws_messages_sent_total',
+  'WS messages sent to NapCat',
+)
 
 // ── 事件处理指标 ──
 
-export const eventProcessed = new Counter({
-  name: 'aemeath_event_processed_total',
-  help: 'Events processed',
-  labelNames: ['event_type', 'handler'] as const,
-  registers: [metricsRegistry],
-})
+export const eventProcessed = metricRegistry.counter(
+  'aemeath_event_processed_total',
+  'Events processed',
+  ['event_type', 'handler'],
+)
 
-export const eventProcessingSeconds = new Histogram({
-  name: 'aemeath_event_processing_seconds',
-  help: 'Event processing duration in seconds',
-  registers: [metricsRegistry],
-})
+export const eventProcessingSeconds = metricRegistry.histogram(
+  'aemeath_event_processing_seconds',
+  'Event processing duration in seconds',
+)
 
-export const eventErrors = new Counter({
-  name: 'aemeath_event_errors_total',
-  help: 'Event processing errors',
-  registers: [metricsRegistry],
-})
+export const eventErrors = metricRegistry.counter(
+  'aemeath_event_errors_total',
+  'Event processing errors',
+)
 
 // ── API 调用指标 ──
 
-export const apiCalls = new Counter({
-  name: 'aemeath_api_calls_total',
-  help: 'OneBot API calls',
-  labelNames: ['action'] as const,
-  registers: [metricsRegistry],
-})
+export const apiCalls = metricRegistry.counter('aemeath_api_calls_total', 'OneBot API calls', [
+  'action',
+])
 
-export const apiCallDuration = new Histogram({
-  name: 'aemeath_api_call_duration_seconds',
-  help: 'OneBot API call duration',
-  registers: [metricsRegistry],
-})
+export const apiCallDuration = metricRegistry.histogram(
+  'aemeath_api_call_duration_seconds',
+  'OneBot API call duration',
+)
 
-export const apiCallErrors = new Counter({
-  name: 'aemeath_api_call_errors_total',
-  help: 'OneBot API call failures',
-  registers: [metricsRegistry],
-})
+export const apiCallErrors = metricRegistry.counter(
+  'aemeath_api_call_errors_total',
+  'OneBot API call failures',
+)
 
 // ── 处理器指标 ──
 
-export const handlersRegistered = new Gauge({
-  name: 'aemeath_handlers_registered',
-  help: 'Number of registered handler methods',
-  registers: [metricsRegistry],
-})
+export const handlersRegistered = metricRegistry.gauge(
+  'aemeath_handlers_registered',
+  'Number of registered handler methods',
+)
 
 // ── 系统指标 ──
 
-export const uptimeSeconds = new Gauge({
-  name: 'aemeath_uptime_seconds',
-  help: 'Process uptime in seconds',
-  registers: [metricsRegistry],
-})
-
-// ── 人员管理指标 ──
-
-export const personnelSyncTotal = new Counter({
-  name: 'aemeath_personnel_sync_total',
-  help: 'Personnel sync task executions',
-  labelNames: ['status'] as const,
-  registers: [metricsRegistry],
-})
-
-export const personnelSyncDuration = new Histogram({
-  name: 'aemeath_personnel_sync_duration_seconds',
-  help: 'Personnel sync task duration (from data collection to DB write)',
-  registers: [metricsRegistry],
-})
-
-export const personnelUsersTotal = new Gauge({
-  name: 'aemeath_personnel_users_total',
-  help: 'Total known users in the users table',
-  registers: [metricsRegistry],
-})
-
-export const personnelFriendsTotal = new Gauge({
-  name: 'aemeath_personnel_friends_total',
-  help: 'Total friends (relation=friend)',
-  registers: [metricsRegistry],
-})
-
-export const personnelGroupsTotal = new Gauge({
-  name: 'aemeath_personnel_groups_total',
-  help: 'Total active groups (is_active=True)',
-  registers: [metricsRegistry],
-})
-
-export const personnelAdminsTotal = new Gauge({
-  name: 'aemeath_personnel_admins_total',
-  help: 'Total admins (relation=admin)',
-  registers: [metricsRegistry],
-})
-
-export const personnelMembershipsTotal = new Gauge({
-  name: 'aemeath_personnel_memberships_total',
-  help: 'Total active group memberships',
-  registers: [metricsRegistry],
-})
-
-export const personnelSyncLastSuccessTs = new Gauge({
-  name: 'aemeath_personnel_sync_last_success_timestamp',
-  help: 'Unix timestamp of the last successful personnel sync',
-  registers: [metricsRegistry],
-})
-
-export const personnelApiErrors = new Counter({
-  name: 'aemeath_personnel_api_errors_total',
-  help: 'Personnel sync API call failures',
-  labelNames: ['action'] as const,
-  registers: [metricsRegistry],
-})
+export const uptimeSeconds = metricRegistry.gauge(
+  'aemeath_uptime_seconds',
+  'Process uptime in seconds',
+)
 
 // ── HTTP 请求指标 ──
 
-export const httpRequestsTotal = new Counter({
-  name: 'aemeath_http_requests_total',
-  help: 'Total HTTP requests',
-  labelNames: ['method', 'route', 'status_code'] as const,
-  registers: [metricsRegistry],
-})
+export const httpRequestsTotal = metricRegistry.counter(
+  'aemeath_http_requests_total',
+  'Total HTTP requests',
+  ['method', 'route', 'status_code'],
+)
 
-export const httpRequestDuration = new Histogram({
-  name: 'aemeath_http_request_duration_seconds',
-  help: 'HTTP request duration',
-  labelNames: ['method', 'route'] as const,
-  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
-  registers: [metricsRegistry],
-})
+export const httpRequestDuration = metricRegistry.histogram(
+  'aemeath_http_request_duration_seconds',
+  'HTTP request duration',
+  {
+    labelNames: ['method', 'route'],
+    buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
+  },
+)

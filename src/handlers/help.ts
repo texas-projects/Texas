@@ -7,8 +7,9 @@ import { getLogger } from '@logger'
 import type { Context } from '@/core/framework/context.js'
 import type { ComponentMeta } from '@/core/framework/decorators.js'
 import { Component, OnCommand, MessageScope } from '@/core/framework/decorators.js'
-import { render } from '@/core/renderer/index.js'
+import { handlerRegistry } from '@/core/registries/handler.js'
 import type { HelpData } from '@/render-templates/help.js'
+import { render } from '@/services/renderer/index.js'
 
 const log = getLogger('help')
 
@@ -29,11 +30,10 @@ interface HelpCategory {
 
 /** 降级处理：直接发送纯文本功能列表。 */
 async function fallbackText(ctx: Context): Promise<boolean> {
-  const { componentRegistry } = await import('@/core/framework/decorators.js')
   const lines: string[] = ['可用功能列表：']
-  for (const meta of componentRegistry.values()) {
-    if (!meta.system) {
-      lines.push(`  · ${meta.displayName}: ${meta.description}`)
+  for (const entry of handlerRegistry.values()) {
+    if (!entry.meta.system) {
+      lines.push(`  · ${entry.meta.displayName}: ${entry.meta.description}`)
     }
   }
   await ctx.reply(lines.join('\n'))
@@ -149,8 +149,9 @@ class HelpHandler {
   /** 处理 /help 指令。 */
   async showHelp(ctx: Context): Promise<boolean> {
     const arg = ctx.getArgStr().trim()
-    const { componentRegistry } = await import('@/core/framework/decorators.js')
-    const allFeatures = [...componentRegistry.values()].filter((c) => !c.system)
+    const allFeatures: ComponentMeta[] = [...handlerRegistry.values()]
+      .map((entry) => entry.meta)
+      .filter((m) => !m.system)
 
     if (!arg || /^\d+$/u.test(arg)) {
       const page = arg ? parseInt(arg, 10) : 1

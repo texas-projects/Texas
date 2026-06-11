@@ -2,7 +2,7 @@
  * 漂流瓶管理 REST API —— /api/drift-bottle-pools。
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok, fail } from '@/core/utils/response.js'
@@ -23,7 +23,7 @@ async function getDriftSvc(app: FastifyInstance): Promise<DriftBottleService> {
 /**
  * 漂流瓶管理路由插件。
  */
-export async function driftBottleRoutes(app: FastifyInstance): Promise<void> {
+const driftBottleRoutes: FastifyPluginAsync = async (app) => {
   /** GET /api/drift-bottle-pools — 列出所有漂流瓶池，含各池未捞取瓶数统计。 */
   app.get('/api/drift-bottle-pools', async (_req: FastifyRequest, reply: FastifyReply) => {
     const svc = await getDriftSvc(app)
@@ -114,3 +114,6 @@ export async function driftBottleRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default driftBottleRoutes
+export { driftBottleRoutes }

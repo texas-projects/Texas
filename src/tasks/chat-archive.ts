@@ -4,6 +4,7 @@ import type { Job } from 'bullmq'
 
 import type { ChatPrismaClient, MainPrismaClient } from '@/core/db/client.js'
 import type { SelfContainedJobResult } from '@/core/tasks/models.js'
+import type { TaskDefinition } from '@/core/tasks/types.js'
 
 export const JOB_NAME = 'chat-archive' as const
 
@@ -17,4 +18,14 @@ export async function chatArchiveProcessor(
   _deps: ArchiveWorkerDeps,
 ): Promise<SelfContainedJobResult> {
   return { type: 'self-contained', summary: { status: 'not-implemented' } }
+}
+
+export const taskDefinition: TaskDefinition = {
+  jobName: 'chat_archive',
+  requires: ['chat_db'],
+  concurrency: 1,
+  schedule: { cron: '0 3 1 * *', tz: 'Asia/Shanghai' },
+  processor: async (job: Job, deps: Record<string, unknown>): Promise<SelfContainedJobResult> => {
+    return chatArchiveProcessor(job, deps as unknown as ArchiveWorkerDeps)
+  },
 }

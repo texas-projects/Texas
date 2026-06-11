@@ -2,14 +2,14 @@
  * 日志 SSE 端点 —— 实时推送应用日志到前端。
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import { logBroadcaster } from '@/core/logging/broadcast.js'
 
 /**
  * 日志 SSE 路由插件。
  */
-export async function logsRoutes(app: FastifyInstance): Promise<void> {
+const logsRoutes: FastifyPluginAsync = async (app) => {
   /**
    * GET /api/logs — SSE 端点，实时推送应用日志。
    *
@@ -63,3 +63,6 @@ export async function logsRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default logsRoutes
+export { logsRoutes }

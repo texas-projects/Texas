@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { MainPrismaClient } from '@/core/db/client.js'
-import { componentRegistry } from '@/core/framework/decorators.js'
+import { handlerRegistry } from '@/core/registries/handler.js'
 import { SettingNode, settingNodeRegistry } from '@/core/settings/decorators.js'
 import { buildSchemaMap, cleanOrphanKeys } from '@/core/settings/schema.js'
 
 beforeEach(() => {
   settingNodeRegistry.clear()
-  componentRegistry.clear()
+  handlerRegistry.clear()
 })
 
 class TestHandler {
@@ -32,15 +32,18 @@ describe('buildSchemaMap', () => {
   it('从 settingNodeRegistry 收集用户定义的配置项', () => {
     SettingNode('myfeature.enabled', { type: 'boolean', default: false })(TestHandler)
 
-    // 注册到 componentRegistry，让 buildSchemaMap 能找到 owner 和 displayName
-    componentRegistry.set('myfeature', {
-      name: 'myfeature',
-      displayName: 'My Feature',
-      description: '',
-      tags: [],
-      defaultPriority: 10,
-      system: false,
-      target: TestHandler,
+    // 注册到 handlerRegistry，让 buildSchemaMap 能找到 owner 和 displayName
+    handlerRegistry.register('myfeature', {
+      meta: {
+        name: 'myfeature',
+        displayName: 'My Feature',
+        description: '',
+        tags: [],
+        defaultPriority: 10,
+        system: false,
+        target: TestHandler,
+      },
+      methods: [],
     })
 
     const map = buildSchemaMap()

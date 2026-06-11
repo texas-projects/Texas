@@ -3,7 +3,7 @@
  */
 
 import { getLogger } from '@logger'
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 
 import type { ServiceRegistry } from '@/core/registries/service-registry.js'
 import { ok, fail } from '@/core/utils/response.js'
@@ -22,7 +22,7 @@ function getAppState(app: FastifyInstance): Record<string, unknown> {
 /**
  * 聊天记录管理路由插件。
  */
-export async function chatRoutes(app: FastifyInstance): Promise<void> {
+const chatRoutes: FastifyPluginAsync = async (app) => {
   // ── 消息查询 ──
 
   /** GET /api/chat/messages/group/:groupId — 获取群聊消息列表（游标分页）。 */
@@ -185,3 +185,6 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
     },
   )
 }
+
+export default chatRoutes
+export { chatRoutes }

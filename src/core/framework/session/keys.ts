@@ -5,4 +5,6 @@
  * 此文件提供模块内统一访问入口，避免在各处直接引用 key-registry.ts。
  */
 
+import '@/core/cache/core-cache-keys.js'
+
 export { sessionMetaKey as sessionKey, sessionDataKey } from '@/core/cache/key-registry.js'

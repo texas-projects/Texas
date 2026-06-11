@@ -2,6 +2,8 @@
  * 用户群签到业务逻辑服务 —— 每日签到、连续天数、排行榜、统计。
  */
 
+import './checkin-cache-keys.js'
+
 import { logger, type Logger } from '@logger'
 
 import { Prisma } from '#prisma/main'
