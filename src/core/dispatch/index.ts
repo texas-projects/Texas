@@ -4,8 +4,7 @@
 
 export { Context, FinishError } from './context.js'
 export {
-  Component,
-  Handler,
+  handler,
   OnCommand,
   OnKeyword,
   OnRegex,
@@ -27,8 +26,6 @@ export {
 export type {
   HandlerMeta,
   HandlerOptions,
-  ComponentOptions,
-  ComponentMeta,
   OnCommandOptions,
   SettingNodeMeta,
   SettingNodeOptions,

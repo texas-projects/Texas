@@ -6,7 +6,7 @@ import { logger } from '@logger'
 
 import type { Context } from '@/core/dispatch/context.js'
 import {
-  Component,
+  handler,
   OnCommand,
   OnKeyword,
   MessageScope,
@@ -77,7 +77,7 @@ class CheckinHandler {
 
 // ── 装饰器注册 ──
 
-Component({
+handler({
   name: 'user_checkin',
   displayName: '群签到',
   description: '用户手动签到，回复今日本群排名和连续/累计天数',

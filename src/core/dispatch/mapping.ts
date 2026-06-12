@@ -26,7 +26,7 @@ export interface HandlerMethod {
   method: Function
   /** 优先级（越小越先执行）。 */
   priority: number
-  /** 来自 @Component 的组件名称。 */
+  /** 来自 handler() 的组件名称。 */
   componentName: string
   /** 方法级元数据（来自 OnCommand 等装饰器）。 */
   meta: HandlerMeta

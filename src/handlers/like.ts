@@ -4,7 +4,7 @@
 
 import type { Context } from '@/core/dispatch/context.js'
 import {
-  Component,
+  handler,
   OnCommand,
   MessageScope,
   Permission,
@@ -113,7 +113,7 @@ async function handleStatus(ctx: Context, svc: LikeService, qq: bigint): Promise
 
 // ── 装饰器注册 ──
 
-Component({
+handler({
   name: 'like',
   displayName: '点赞',
   description: '给自己 QQ 主页点赞，支持手动和每日定时自动点赞',

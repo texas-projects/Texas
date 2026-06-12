@@ -7,7 +7,7 @@
 import { logger } from '@logger'
 
 import type { Context } from '@/core/dispatch/context.js'
-import { Component, OnCommand, Permission, SettingNode } from '@/core/dispatch/decorators.js'
+import { handler, OnCommand, Permission, SettingNode } from '@/core/dispatch/decorators.js'
 import type { FeedbackService } from '@/services/feedback.js'
 
 type FeedbackType = 'bug' | 'suggestion' | 'complaint'
@@ -128,7 +128,7 @@ class FeedbackHandler {
 
 // ── 装饰器注册 ──
 
-Component({
+handler({
   name: 'feedback',
   displayName: '用户反馈',
   description: '用户反馈提交与查询功能',

@@ -6,7 +6,7 @@ import { logger } from '@logger'
 
 import type { Context } from '@/core/dispatch/context.js'
 import {
-  Component,
+  handler,
   OnStartsWith,
   OnFullMatch,
   MessageScope,
@@ -140,7 +140,7 @@ class DriftBottleHandler {
 
 // ── 装饰器注册 ──
 
-Component({
+handler({
   name: 'drift_bottle',
   displayName: '漂流瓶',
   description: '扔/捞漂流瓶，同池内随机互通，每瓶一次性消耗',

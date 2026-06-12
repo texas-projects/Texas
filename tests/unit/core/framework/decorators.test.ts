@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  Component,
+  handler,
   MessageScope,
   OnBotOffline,
   OnCommand,
@@ -67,9 +67,9 @@ class SysHandler {
   }
 }
 
-describe('@Component 装饰器', () => {
+describe('handler() 装饰器', () => {
   it('应将组件注册到 componentRegistry', () => {
-    Component({ name: 'echo', displayName: '回声', description: '复读消息' })(EchoHandler)
+    handler({ name: 'echo', displayName: '回声', description: '复读消息' })(EchoHandler)
 
     expect(handlerRegistry.has('echo')).toBe(true)
     const meta = handlerRegistry.get('echo')?.meta
@@ -82,7 +82,7 @@ describe('@Component 装饰器', () => {
   })
 
   it('应提供合理的默认值', () => {
-    Component({ name: 'minimal' })(MinimalHandler)
+    handler({ name: 'minimal' })(MinimalHandler)
 
     const meta = handlerRegistry.get('minimal')?.meta
     expect(meta?.displayName).toBe('minimal')
@@ -93,7 +93,7 @@ describe('@Component 装饰器', () => {
   })
 
   it('system=true 应正确记录', () => {
-    Component({ name: 'sys', system: true })(SysHandler)
+    handler({ name: 'sys', system: true })(SysHandler)
 
     expect(handlerRegistry.get('sys')?.meta.system).toBe(true)
   })

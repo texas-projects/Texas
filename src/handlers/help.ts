@@ -5,9 +5,9 @@
 import { getLogger } from '@logger'
 
 import type { Context } from '@/core/dispatch/context.js'
-import type { ComponentMeta } from '@/core/dispatch/decorators.js'
-import { Component, OnCommand, MessageScope } from '@/core/dispatch/decorators.js'
+import { handler, OnCommand, MessageScope } from '@/core/dispatch/decorators.js'
 import { handlerRegistry } from '@/core/dispatch/registry.js'
+import type { HandlerMeta } from '@/core/dispatch/registry.js'
 import type { HelpData } from '@/render-templates/help.js'
 import { render } from '@/services/renderer/index.js'
 
@@ -44,7 +44,7 @@ async function fallbackText(ctx: Context): Promise<boolean> {
 async function handleList(
   ctx: Context,
   page: number,
-  allFeatures: ComponentMeta[],
+  allFeatures: HandlerMeta[],
 ): Promise<boolean> {
   const grouped = new Map<string, HelpItem[]>()
   for (const meta of allFeatures) {
@@ -113,7 +113,7 @@ async function handleList(
 async function handleDetail(
   ctx: Context,
   featureQuery: string,
-  allFeatures: ComponentMeta[],
+  allFeatures: HandlerMeta[],
 ): Promise<boolean> {
   const meta = allFeatures.find((c) => c.name === featureQuery || c.displayName === featureQuery)
 
@@ -149,7 +149,7 @@ class HelpHandler {
   /** 处理 /help 指令。 */
   async showHelp(ctx: Context): Promise<boolean> {
     const arg = ctx.getArgStr().trim()
-    const allFeatures: ComponentMeta[] = [...handlerRegistry.values()]
+    const allFeatures: HandlerMeta[] = [...handlerRegistry.values()]
       .map((entry) => entry.meta)
       .filter((m) => !m.system)
 
@@ -164,7 +164,7 @@ class HelpHandler {
 
 // ── 装饰器注册 ──
 
-Component({
+handler({
   name: 'help',
   displayName: '帮助',
   description: '查看当前可用功能列表',

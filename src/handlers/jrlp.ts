@@ -6,7 +6,7 @@ import { logger } from '@logger'
 
 import type { Context } from '@/core/dispatch/context.js'
 import {
-  Component,
+  handler,
   OnRegex,
   MessageScope,
   Permission,
@@ -73,7 +73,7 @@ class JrlpHandler {
 
 // ── 装饰器注册 ──
 
-Component({
+handler({
   name: 'jrlp',
   displayName: '今日老婆',
   description: '每日群内随机抽取群老婆，每人每群每天一次',
